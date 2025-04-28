@@ -1,0 +1,1 @@
+web: gunicorn kakifilem.wsgi --log-file -
