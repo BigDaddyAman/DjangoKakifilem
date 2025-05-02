@@ -16,15 +16,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
-from django.views.generic import TemplateView  # 👈 Add this
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('countdown/', views.countdown, name='countdown'),
-    path('sw.js', TemplateView.as_view(template_name="sw.js", content_type='application/javascript')),  # 👈 Add this
+    # Serve JS files from templates directory
+    path('InPagePush.js', TemplateView.as_view(
+        template_name='InPagePush.js',
+        content_type='application/javascript',
+    ), name='inpage-push-js'),
+    path('monetag.js', TemplateView.as_view(
+        template_name='monetag.js',
+        content_type='application/javascript',
+    ), name='monetag-js'),
+    path('sw.js', TemplateView.as_view(
+        template_name='sw.js',
+        content_type='application/javascript',
+    ), name='sw-js'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
