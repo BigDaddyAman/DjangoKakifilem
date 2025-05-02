@@ -30,13 +30,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-e_rhw(l^0h!t8lgo(y_-#sx+ws
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Update ALLOWED_HOSTS to include both railway and your custom domain
-ALLOWED_HOSTS = [
-    'web-production-a47d1.up.railway.app',
-    'bot.kakifilem.com',
-    'localhost',
-    '127.0.0.1'
-]
+# Update ALLOWED_HOSTS to be more permissive
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -140,13 +135,17 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Security settings for production
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = not DEBUG  # Only redirect in production
-CSRF_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_SECURE = not DEBUG
+# Security settings - disable SSL/HTTPS enforcement
+SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = None
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
 
-# Comment out or remove these in development
+# Comment out all HSTS settings
 # SECURE_HSTS_SECONDS = 31536000
 # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 # SECURE_HSTS_PRELOAD = True
+
+# Set this to handle proxy headers
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
