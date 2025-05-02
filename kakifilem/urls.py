@@ -24,6 +24,7 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
+    path('index.html', views.index, name='index_html'),  # Add this line
     path('countdown/', views.countdown, name='countdown'),
     # Serve JS files from templates directory
     path('InPagePush.js', TemplateView.as_view(
