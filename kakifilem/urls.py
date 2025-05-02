@@ -19,9 +19,12 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
+from django.views.generic import TemplateView  # 👈 Add this
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('countdown/', views.countdown, name='countdown'),
+    path('sw.js', TemplateView.as_view(template_name="sw.js", content_type='application/javascript')),  # 👈 Add this
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
