@@ -146,31 +146,21 @@
         }
 
         function redirectToCountdown() {
+            // Get the current path
+            const path = window.location.pathname;
+            // If this is already a short URL (like /abc123), just add /countdown/ prefix
+            if (path.length > 1 && path.length <= 8) {
+                window.location.href = `/countdown${path}`;
+                return;
+            }
+
+            // Otherwise handle the long URL params
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const videoName = urlParams.get('videoName');
             
             if (token && videoName) {
-                addLog('Getting short URL...');
-                // Request a short URL from Django
-                fetch(`/shorten/?token=${token}&videoName=${videoName}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.short_id) {
-                            addLog('Got short URL, redirecting...');
-                            window.location.href = `/countdown/${data.short_id}`;
-                        } else {
-                            throw new Error('No short_id received');
-                        }
-                    })
-                    .catch(() => {
-                        // Fallback to long URL if shortening fails
-                        addLog('Using long URL fallback...');
-                        window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
-                    });
-            } else {
-                addLog('Error: No token or video name found');
-                alert("No token or video name found in URL");
+                window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
             }
         }
 
