@@ -26,6 +26,8 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('index.html', views.index, name='index_html'),
     path('countdown/', views.countdown, name='countdown'),
+    # Add this line to handle short URLs
+    path('<str:short_id>/', views.redirect_to_original, name='redirect'),
     # JS files paths
     path('InPagePush.js', TemplateView.as_view(
         template_name='InPagePush.js',
