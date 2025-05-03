@@ -30,8 +30,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-e_rhw(l^0h!t8lgo(y_-#sx+ws
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Update ALLOWED_HOSTS to be more permissive
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '.railway.app',
+    'localhost',
+    '127.0.0.1',
+    'bot.kakifilem.com'
+]
 
 
 # Application definition
@@ -160,7 +164,7 @@ USE_X_FORWARDED_PORT = True
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{os.getenv('REDISHOST', 'localhost')}:{os.getenv('REDISPORT', 6379)}/0",
+        "LOCATION": f"redis://{os.getenv('REDISHOST')}:{os.getenv('REDISPORT')}/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "USERNAME": os.getenv('REDISUSER'),
