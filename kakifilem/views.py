@@ -15,26 +15,24 @@ def countdown(request):
 def redirect_to_original(request, short_id):
     # Try to get URL from Redis cache first
     cache_key = f'short_url:{short_id}'
-    long_url = cache.get(cache_key)
+    cached_data = cache.get(cache_key)
     
-    if not long_url:
+    if cached_data:
         try:
-            # Get from database if not in cache
-            short_url = ShortURL.objects.get(short_id=short_id)
-            long_url = short_url.long_url
+            # Parse the JSON data
+            import json
+            data = json.loads(cached_data)
+            # Reconstruct the countdown URL with parameters
+            return redirect(f"/countdown/?token={data['token']}&videoName={data['videoName']}")
+        except:
+            pass
             
-            # Update access count
-            short_url.access_count += 1
-            short_url.save()
-            
-            # Cache frequently accessed URLs (more than 10 hits)
-            if short_url.access_count > 10:
-                cache.set(cache_key, long_url, timeout=86400)  # Cache for 24 hours
-                
-        except ShortURL.DoesNotExist:
-            raise Http404("Short URL not found")
-            
-    return redirect(long_url)
+    # Fallback to database lookup
+    try:
+        short_url = ShortURL.objects.get(short_id=short_id)
+        return redirect(short_url.long_url)
+    except ShortURL.DoesNotExist:
+        raise Http404("Short URL not found")
 
 def shorten_url(request):
     """Create short URL for countdown page"""
