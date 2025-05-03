@@ -198,23 +198,14 @@
         }
         
         function redirectToTelegram() {
-            // Get the current path
+            // Get short ID from URL path
             const pathParts = window.location.pathname.split('/');
             const shortId = pathParts[pathParts.length - 1];
             
-            // If we have a short ID, use it
-            if (shortId && shortId.length <= 6) {
+            if (shortId) {
                 const telegramLink = `https://t.me/KakifilemBot?start=${shortId}`;
                 window.open(telegramLink, '_blank');
-                return;
-            }
-
-            // Fallback to using token from query params
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-            if (token) {
-                const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
-                window.open(telegramLink, '_blank');
+                document.getElementById('get-file').textContent = "Sudah Dihantar";
             }
         }
 
