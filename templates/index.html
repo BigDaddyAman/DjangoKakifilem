@@ -151,23 +151,23 @@
             const videoName = urlParams.get('videoName');
             
             if (token && videoName) {
-                addLog('Redirecting to countdown page...');
-                // Check if current URL is already a short URL
-                const path = window.location.pathname;
-                if (path.length <= 8 && path !== '/') { // Short URL like /abc123/
-                    window.location.href = `/countdown${path}`; // Keep short URL format
-                } else {
-                    // Use Redis to get/create short URL
-                    fetch(`/shorten/?token=${token}&videoName=${videoName}`)
-                        .then(response => response.json())
-                        .then(data => {
+                addLog('Getting short URL...');
+                // Request a short URL from Django
+                fetch(`/shorten/?token=${token}&videoName=${videoName}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.short_id) {
+                            addLog('Got short URL, redirecting...');
                             window.location.href = `/countdown/${data.short_id}`;
-                        })
-                        .catch(() => {
-                            // Fallback to long URL if shortening fails
-                            window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
-                        });
-                }
+                        } else {
+                            throw new Error('No short_id received');
+                        }
+                    })
+                    .catch(() => {
+                        // Fallback to long URL if shortening fails
+                        addLog('Using long URL fallback...');
+                        window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
+                    });
             } else {
                 addLog('Error: No token or video name found');
                 alert("No token or video name found in URL");

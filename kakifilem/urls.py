@@ -24,6 +24,7 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
+    path('shorten/', views.shorten_url, name='shorten'),  # Add this line
     path('index.html', views.index, name='index_html'),  # Add this line
     path('countdown/', views.countdown, name='countdown'),
     path('countdown/<str:short_id>/', views.countdown, name='countdown_short'),
