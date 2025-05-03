@@ -83,10 +83,14 @@ WSGI_APPLICATION = 'kakifilem.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('PGDATABASE'),
+        'USER': os.getenv('PGUSER'),
+        'PASSWORD': os.getenv('PGPASSWORD'),
+        'HOST': os.getenv('PGHOST'),
+        'PORT': os.getenv('PGPORT', 5432),
+    }
 }
 
 
@@ -156,9 +160,13 @@ USE_X_FORWARDED_PORT = True
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.getenv('REDIS_URL', 'redis://localhost:6379/0'),
+        "LOCATION": f"redis://{os.getenv('REDISHOST', 'localhost')}:{os.getenv('REDISPORT', 6379)}/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "USERNAME": os.getenv('REDISUSER'),
+            "PASSWORD": os.getenv('REDISPASSWORD'),
+            "SOCKET_TIMEOUT": 5,
+            "DECODE_RESPONSES": True,
         }
     }
 }
