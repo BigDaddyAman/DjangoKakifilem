@@ -146,13 +146,16 @@
         }
 
         function redirectToCountdown() {
-            // Get the current path which should be /abc123
-            const path = window.location.pathname;
-            // Remove any trailing slash
-            const shortId = path.replace(/\/$/, '').split('/').pop();
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const videoName = urlParams.get('videoName');
             
-            if (shortId) {
-                window.location.href = `/countdown/${shortId}/`;
+            if (token && videoName) {
+                addLog('Redirecting to countdown page...');
+                window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
+            } else {
+                addLog('Error: No token or video name found');
+                alert("No token or video name found in URL");
             }
         }
 

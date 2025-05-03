@@ -24,11 +24,9 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
-    path('shorten/', views.shorten_url, name='shorten'),  # Add this line
-    path('index.html', views.index, name='index_html'),  # Add this line
+    path('index.html', views.index, name='index_html'),
     path('countdown/', views.countdown, name='countdown'),
-    path('countdown/<str:short_id>/', views.countdown, name='countdown_short'),
-    # Serve JS files from templates directory
+    # JS files paths
     path('InPagePush.js', TemplateView.as_view(
         template_name='InPagePush.js',
         content_type='application/javascript',
@@ -41,5 +39,4 @@ urlpatterns = [
         template_name='sw.js',
         content_type='application/javascript',
     ), name='sw-js'),
-    path('<str:short_id>/', views.redirect_to_original, name='redirect'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
