@@ -202,8 +202,13 @@
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const videoName = urlParams.get('videoName');
+            
             if (token && videoName) {
-                const telegramLink = `https://t.me/KakifilemBot?start=${encodeURIComponent(token)}`;
+                // Use path-based token if it's a short URL
+                const pathToken = window.location.pathname.split('/')[1];
+                const finalToken = pathToken || token;
+                
+                const telegramLink = `https://t.me/KakifilemBot?start=${encodeURIComponent(finalToken)}`;
                 console.log(`Sending token to: ${telegramLink}`);
                 window.open(telegramLink, '_blank', 'noopener,noreferrer');
                 getFileButton.textContent = "Sudah Dihantar";

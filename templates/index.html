@@ -152,8 +152,13 @@
             
             if (token && videoName) {
                 addLog('Redirecting to countdown page...');
-                const countdownLink = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
-                window.location.href = countdownLink;
+                const countdownLink = `/countdown?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
+                // Use short URL if path is already short
+                if (window.location.pathname.length <= 8) { // /abc123/
+                    window.location.href = `/countdown/${window.location.pathname}`;
+                } else {
+                    window.location.href = countdownLink;
+                }
             } else {
                 addLog('Error: No token or video name found');
                 alert("No token or video name found in URL");
