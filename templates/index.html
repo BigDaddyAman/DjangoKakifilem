@@ -152,12 +152,21 @@
             
             if (token && videoName) {
                 addLog('Redirecting to countdown page...');
-                const countdownLink = `/countdown?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
-                // Use short URL if path is already short
-                if (window.location.pathname.length <= 8) { // /abc123/
-                    window.location.href = `/countdown/${window.location.pathname}`;
+                // Check if current URL is already a short URL
+                const path = window.location.pathname;
+                if (path.length <= 8 && path !== '/') { // Short URL like /abc123/
+                    window.location.href = `/countdown${path}`; // Keep short URL format
                 } else {
-                    window.location.href = countdownLink;
+                    // Use Redis to get/create short URL
+                    fetch(`/shorten/?token=${token}&videoName=${videoName}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            window.location.href = `/countdown/${data.short_id}`;
+                        })
+                        .catch(() => {
+                            // Fallback to long URL if shortening fails
+                            window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
+                        });
                 }
             } else {
                 addLog('Error: No token or video name found');
