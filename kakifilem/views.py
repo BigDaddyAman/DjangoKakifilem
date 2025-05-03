@@ -9,30 +9,51 @@ logger = logging.getLogger(__name__)
 def index(request):
     return render(request, 'index.html')
 
-def countdown(request):
+def countdown(request, short_id=None):
+    if short_id:
+        # If accessed via short URL, get the params from Redis/DB
+        cache_key = f'short_url:{short_id}'
+        long_url = cache.get(cache_key)
+        
+        if not long_url:
+            try:
+                short_url = ShortURL.objects.get(short_id=short_id)
+                long_url = short_url.long_url
+            except ShortURL.DoesNotExist:
+                raise Http404("Short URL not found")
+                
+        # Pass the short_id to the template
+        return render(request, 'countdown.html', {'short_id': short_id})
+    
     return render(request, 'countdown.html')
 
 def redirect_to_original(request, short_id):
     # Try to get URL from Redis cache first
     cache_key = f'short_url:{short_id}'
-    cached_data = cache.get(cache_key)
+    long_url = cache.get(cache_key)
     
-    if cached_data:
+    if not long_url:
         try:
-            # Parse the JSON data
-            import json
-            data = json.loads(cached_data)
-            # Reconstruct the countdown URL with parameters
-            return redirect(f"/countdown/?token={data['token']}&videoName={data['videoName']}")
-        except:
-            pass
+            # Get from database if not in cache
+            short_url = ShortURL.objects.get(short_id=short_id)
+            long_url = short_url.long_url
             
-    # Fallback to database lookup
-    try:
-        short_url = ShortURL.objects.get(short_id=short_id)
-        return redirect(short_url.long_url)
-    except ShortURL.DoesNotExist:
-        raise Http404("Short URL not found")
+            # Update access count
+            short_url.access_count += 1
+            short_url.save()
+            
+            # Cache frequently accessed URLs
+            cache.set(cache_key, long_url, timeout=86400)
+                
+        except ShortURL.DoesNotExist:
+            raise Http404("Short URL not found")
+    
+    # Extract token and videoName from long_url
+    if 'token=' in long_url and 'videoName=' in long_url:
+        # Keep the URL short by redirecting to countdown with short_id
+        return redirect(f'/countdown/{short_id}/')
+    
+    return redirect(long_url)
 
 def shorten_url(request):
     """Create short URL for countdown page"""
