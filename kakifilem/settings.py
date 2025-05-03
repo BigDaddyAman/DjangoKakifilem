@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'kakifilem.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres:HqypeSBbxfHvqRacEPVihtFGHYUipEDC@gondola.proxy.rlwy.net:18020/railway',
+        default=os.getenv('DATABASE_URL'),
         conn_max_age=600
     )
 }
@@ -160,7 +160,7 @@ USE_X_FORWARDED_PORT = True
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://default:QgzNKpIEYeWFRjRXWjmyuQSUFjWDAQgb@crossover.proxy.rlwy.net:14140",
+        "LOCATION": os.getenv('REDIS_URL'),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "SOCKET_TIMEOUT": 5,
