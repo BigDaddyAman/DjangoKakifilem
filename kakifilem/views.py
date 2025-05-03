@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.core.cache import cache
 from shortener.models import ShortURL
 import logging
@@ -35,3 +35,21 @@ def redirect_to_original(request, short_id):
             raise Http404("Short URL not found")
             
     return redirect(long_url)
+
+def shorten_url(request):
+    """Create short URL for countdown page"""
+    token = request.GET.get('token')
+    video_name = request.GET.get('videoName')
+    
+    if not token or not video_name:
+        return JsonResponse({'error': 'Missing parameters'}, status=400)
+        
+    long_url = f"/countdown/?token={token}&videoName={video_name}"
+    
+    try:
+        # Create short URL
+        short_url = ShortURL.objects.create(long_url=long_url)
+        return JsonResponse({'short_id': short_url.short_id})
+    except Exception as e:
+        logger.error(f"Error creating short URL: {e}")
+        return JsonResponse({'error': 'Failed to create short URL'}, status=500)

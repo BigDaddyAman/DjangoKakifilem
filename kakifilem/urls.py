@@ -26,6 +26,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('index.html', views.index, name='index_html'),  # Add this line
     path('countdown/', views.countdown, name='countdown'),
+    path('countdown/<str:short_id>/', views.countdown, name='countdown_short'),
     # Serve JS files from templates directory
     path('InPagePush.js', TemplateView.as_view(
         template_name='InPagePush.js',
