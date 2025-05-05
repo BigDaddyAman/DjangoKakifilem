@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
@@ -39,4 +39,6 @@ urlpatterns = [
         template_name='sw.js',
         content_type='application/javascript',
     ), name='sw-js'),
+    # Add this line for favicon.ico
+    path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon.ico')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
