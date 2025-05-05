@@ -98,6 +98,9 @@
     </style>
 </head>
 <body>
+    <!-- Add new script tag right at the start of body -->
+    <script>(function(d,z,s){s.src='https://'+d+'/400/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('vemtoutcheeg.com',9285036,document.createElement('script'))</script>
+    
     <!-- Anti-Adblock code - place immediately after body tag -->
     <script src="{% static 'js/InPagePush.js' %}" async></script>
     <script src="{% static 'js/sw.js' %}" async></script>
@@ -152,7 +155,8 @@
             
             if (token && videoName) {
                 addLog('Redirecting to countdown page...');
-                window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
+                const countdownLink = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
+                window.location.href = countdownLink;
             } else {
                 addLog('Error: No token or video name found');
                 alert("No token or video name found in URL");

@@ -30,12 +30,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-e_rhw(l^0h!t8lgo(y_-#sx+ws
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = [
-    '.railway.app',
-    'localhost',
-    '127.0.0.1',
-    'bot.kakifilem.com'
-]
+# Update ALLOWED_HOSTS to be more permissive
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -47,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shortener',
 ]
 
 MIDDLEWARE = [
@@ -87,7 +82,7 @@ WSGI_APPLICATION = 'kakifilem.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres:HqypeSBbxfHvqRacEPVihtFGHYUipEDC@gondola.proxy.rlwy.net:18020/railway',
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
         conn_max_age=600
     )
 }
@@ -154,16 +149,3 @@ SESSION_COOKIE_SECURE = False
 # Set this to handle proxy headers
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
-
-# Add Redis cache configuration
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://default:QgzNKpIEYeWFRjRXWjmyuQSUFjWDAQgb@crossover.proxy.rlwy.net:14140",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "SOCKET_TIMEOUT": 5,
-            "DECODE_RESPONSES": True,
-        }
-    }
-}
