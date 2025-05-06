@@ -41,4 +41,11 @@ urlpatterns = [
     ), name='sw-js'),
     # Add this line for favicon.ico
     path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon.ico')),
+    path('apple-touch-icon.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/apple-touch-icon.png')),
+    path('apple-touch-icon-precomposed.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/apple-touch-icon.png')),
+    path('favicon-32x32.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon-32x32.png')),
+    path('favicon-16x16.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon-16x16.png')),
+    path('site.webmanifest', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/site.webmanifest')),
+    path('android-chrome-192x192.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/android-chrome-192x192.png')),
+    path('android-chrome-512x512.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/android-chrome-512x512.png')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
