@@ -202,22 +202,22 @@
                     })
                 });
 
-                // Wait a bit to ensure video is sent
-                await new Promise(resolve => setTimeout(resolve, 2000));
-
-                // Don't throw error, just check status
-                if (response.ok) {
+                const result = await response.json();
+                
+                if (result.status === 'success') {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    window.open('https://otieu.com/4/9285066', '_blank');
+                    getFileButton.disabled = true;
+                    
+                    // Force open ads in new tab
+                    if (result.ads_url && result.force_redirect) {
+                        window.location.href = result.ads_url;
+                    }
                     return true;
                 } else {
-                    getFileButton.textContent = "Cuba Sekali Lagi";
-                    getFileButton.disabled = false;
-                    return false;
+                    throw new Error(result.message);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                // Don't show error, just retry option
                 getFileButton.textContent = "Cuba Sekali Lagi";
                 getFileButton.disabled = false;
                 return false;
