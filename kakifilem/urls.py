@@ -14,27 +14,17 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView, RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
 
-# Add CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development
-CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'OPTIONS',
-]
-
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', views.index, name='index'),
-    path('index.html', views.index, name='index_html'),  # Add this line
+    path('index.html', views.index, name='index_html'),
     path('countdown/', views.countdown, name='countdown'),
-    # Serve JS files from templates directory
+    # Static asset paths
     path('InPagePush.js', TemplateView.as_view(
         template_name='InPagePush.js',
         content_type='application/javascript',
@@ -47,13 +37,14 @@ urlpatterns = [
         template_name='sw.js',
         content_type='application/javascript',
     ), name='sw-js'),
-    # Add this line for favicon.ico
+    # Favicon paths
     path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon.ico')),
     path('apple-touch-icon.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/apple-touch-icon.png')),
-    path('apple-touch-icon-precomposed.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/apple-touch-icon.png')),
     path('favicon-32x32.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon-32x32.png')),
     path('favicon-16x16.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon-16x16.png')),
     path('site.webmanifest', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/site.webmanifest')),
-    path('android-chrome-192x192.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/android-chrome-192x192.png')),
-    path('android-chrome-512x512.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/android-chrome-512x512.png')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Add custom error handlers
+handler404 = 'django.views.defaults.page_not_found'
+handler500 = 'django.views.defaults.server_error'
