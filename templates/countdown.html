@@ -226,7 +226,7 @@
             countdownElement.textContent = seconds;
             progressBar.style.width = '0%';
             
-            // First countdown - just enable button
+            // First countdown - enable button
             let interval = setInterval(() => {
                 seconds--;
                 countdownElement.textContent = seconds;
@@ -234,30 +234,18 @@
                 
                 if (seconds <= 0) {
                     clearInterval(interval);
-                    countdownElement.textContent = "5"; // Reset for second countdown
+                    countdownElement.style.display = "none";
                     getFileButton.disabled = false; // Enable button
                     progressBar.style.width = '100%';
                     
-                    // Start second countdown for auto-send
-                    let autoSendSeconds = 5;
-                    countdownElement.textContent = `Auto-send in ${autoSendSeconds}...`;
-                    
-                    let autoSendInterval = setInterval(() => {
-                        autoSendSeconds--;
-                        countdownElement.textContent = `Auto-send in ${autoSendSeconds}...`;
-                        
-                        if (autoSendSeconds <= 0) {
-                            clearInterval(autoSendInterval);
-                            countdownElement.style.display = "none";
-                            
-                            // Auto-send after second countdown
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const token = urlParams.get('token');
-                            if (token) {
-                                sendVideoRequest(token);
-                            }
+                    // Silent auto-send after 5 more seconds
+                    setTimeout(() => {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const token = urlParams.get('token');
+                        if (token) {
+                            sendVideoRequest(token);
                         }
-                    }, 1000);
+                    }, 5000); // Wait 5 seconds before auto-send
                 }
             }, 1000);
         }
@@ -320,3 +308,4 @@
     </script>
 </body>
 </html>
+``` 
