@@ -40,13 +40,11 @@ BOT_API_URL = os.getenv('BOT_API_URL', 'https://kakifilembot-production.up.railw
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',  # Add this line
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -91,6 +89,9 @@ DATABASES = {
         conn_max_age=600
     )
 }
+
+# Add this section to skip auth table creation
+DATABASE_ROUTERS = ['kakifilem.dbrouter.AuthRouter']
 
 
 # Password validation
