@@ -33,6 +33,9 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 # Update ALLOWED_HOSTS to be more permissive
 ALLOWED_HOSTS = ['*']
 
+# Add this near your other settings
+BOT_API_URL = os.getenv('BOT_API_URL', 'https://kakifilembot-production.up.railway.app')
+
 
 # Application definition
 
