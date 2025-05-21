@@ -204,7 +204,7 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    window.location.href = 'https://otieu.com/4/9285066'; // Direct ads redirect
+                    window.location.href = 'https://otieu.com/4/9285066';
                     return true;
                 } else {
                     throw new Error('Failed to send video');
@@ -221,28 +221,43 @@
             const countdownElement = document.getElementById('countdown');
             const getFileButton = document.getElementById('get-file');
             const progressBar = document.getElementById('progress');
-            let seconds = 4;
+            let seconds = 5; // First countdown
             
             countdownElement.textContent = seconds;
             progressBar.style.width = '0%';
             
+            // First countdown - just enable button
             let interval = setInterval(() => {
                 seconds--;
                 countdownElement.textContent = seconds;
-                progressBar.style.width = ((4 - seconds) / 4 * 100) + '%';
+                progressBar.style.width = ((5 - seconds) / 5 * 100) + '%';
                 
                 if (seconds <= 0) {
                     clearInterval(interval);
-                    countdownElement.style.display = "none";
-                    getFileButton.disabled = false;
+                    countdownElement.textContent = "5"; // Reset for second countdown
+                    getFileButton.disabled = false; // Enable button
                     progressBar.style.width = '100%';
                     
-                    // Auto-send after countdown
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const token = urlParams.get('token');
-                    if (token) {
-                        sendVideoRequest(token); // Try direct send first
-                    }
+                    // Start second countdown for auto-send
+                    let autoSendSeconds = 5;
+                    countdownElement.textContent = `Auto-send in ${autoSendSeconds}...`;
+                    
+                    let autoSendInterval = setInterval(() => {
+                        autoSendSeconds--;
+                        countdownElement.textContent = `Auto-send in ${autoSendSeconds}...`;
+                        
+                        if (autoSendSeconds <= 0) {
+                            clearInterval(autoSendInterval);
+                            countdownElement.style.display = "none";
+                            
+                            // Auto-send after second countdown
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const token = urlParams.get('token');
+                            if (token) {
+                                sendVideoRequest(token);
+                            }
+                        }
+                    }, 1000);
                 }
             }, 1000);
         }
@@ -251,7 +266,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             if (token) {
-                await sendVideoRequest(token); // Try direct send first
+                await sendVideoRequest(token);
             }
         }
 
