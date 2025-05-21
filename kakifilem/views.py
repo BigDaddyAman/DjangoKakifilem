@@ -6,6 +6,7 @@ def index(request):
 
 def countdown(request):
     context = {
-        'bot_api_url': settings.BOT_API_URL
+        'bot_api_url': settings.BOT_API_URL,
+        'request': request  # Pass request to template
     }
     return render(request, 'countdown.html', context)
