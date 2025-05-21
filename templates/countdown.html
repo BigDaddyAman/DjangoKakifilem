@@ -254,18 +254,29 @@
                     const urlParams = new URLSearchParams(window.location.search);
                     const token = urlParams.get('token');
                     if (token) {
-                        sendVideoRequest(token);
+                        // First try API
+                        sendVideoRequest(token).catch(() => {
+                            // If API fails, fallback to Telegram link
+                            const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
+                            window.location.href = telegramLink;
+                        });
                     }
                 }
             }, 1000);
         }
         
-        function redirectToTelegram() {
+        async function redirectToTelegram() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             if (token) {
-                // Pass false to prevent fallback loop
-                sendVideoRequest(token, false);
+                // Try API first
+                try {
+                    await sendVideoRequest(token, false);
+                } catch (error) {
+                    // If API fails, redirect to Telegram
+                    const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
+                    window.location.href = telegramLink;
+                }
             }
         }
 
