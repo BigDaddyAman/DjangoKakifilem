@@ -185,15 +185,9 @@
         async function sendVideoRequest(token) {
             const botApiUrl = '{{ bot_api_url }}';
             const getFileButton = document.getElementById('get-file');
-            const telegram_id = '{{ telegram_id }}'; // Get from context instead of localStorage
+            const telegram_id = '{{ telegram_id }}';
             
             try {
-                if (!telegram_id) {
-                    // If no telegram_id, fallback to telegram link
-                    window.location.href = `https://t.me/KakifilemBot?start=${token}`;
-                    return;
-                }
-
                 const response = await fetch(`${botApiUrl}/api/send_video`, {
                     method: 'POST',
                     headers: {
@@ -209,14 +203,19 @@
                 if (result.status === 'success') {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
                     getFileButton.disabled = true;
-                    return;
+                    
+                    // Open monetag ads after successful send
+                    window.open('https://otieu.com/4/9285066', '_blank');
+                    return true;
                 }
-                // If API fails, fallback to telegram link
-                window.location.href = `https://t.me/KakifilemBot?start=${token}`;
+                throw new Error(result.error || 'Failed to send video');
             } catch (error) {
                 console.error('Error:', error);
-                // On error, fallback to telegram link
-                window.location.href = `https://t.me/KakifilemBot?start=${token}`;
+                // Only fallback to Telegram if we don't have telegram_id
+                if (!telegram_id) {
+                    window.location.href = `https://t.me/KakifilemBot?start=${token}`;
+                }
+                return false;
             }
         }
 
