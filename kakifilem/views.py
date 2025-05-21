@@ -1,7 +1,15 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
 import logging
-from database import get_user_by_token  # Add this import
+import sys
+import os
+
+# Add bot directory to Python path
+bot_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../KakifilemBot-main'))
+sys.path.append(bot_path)
+
+# Import from bot's database.py
+from database import get_user_by_token
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -14,7 +22,7 @@ def countdown(request):
     token = request.GET.get('token')
     video_name = request.GET.get('videoName')
     
-    # Get telegram_id from database using token
+    # Get telegram_id from bot's database
     telegram_id = get_user_by_token(token)
     
     if not telegram_id:
