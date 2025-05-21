@@ -21,6 +21,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from . import views
 
+# Add CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'OPTIONS',
+]
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),

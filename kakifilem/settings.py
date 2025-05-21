@@ -43,9 +43,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Add this at the top
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -149,3 +151,14 @@ SESSION_COOKIE_SECURE = False
 # Set this to handle proxy headers
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
+
+# Bot API URL
+BOT_API_URL = os.getenv('BOT_API_URL', 'http://localhost:8080')
+
+# Add CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST', 
+    'OPTIONS'
+]
