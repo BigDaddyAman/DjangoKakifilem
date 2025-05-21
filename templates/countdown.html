@@ -182,13 +182,18 @@
         © Kakifilem 2025
     </footer>
     <script>
-        async function sendVideoRequest(token, fallbackToTelegram = true) {
+        async function sendVideoRequest(token) {
             const botApiUrl = '{{ bot_api_url }}';
             const getFileButton = document.getElementById('get-file');
-            // Hardcode telegram_id if not in localStorage
-            const telegramId = localStorage.getItem('telegram_user_id') || '{{ request.GET.telegram_id }}';
+            const telegram_id = '{{ telegram_id }}'; // Get from context instead of localStorage
             
             try {
+                if (!telegram_id) {
+                    // If no telegram_id, fallback to telegram link
+                    window.location.href = `https://t.me/KakifilemBot?start=${token}`;
+                    return;
+                }
+
                 const response = await fetch(`${botApiUrl}/api/send_video`, {
                     method: 'POST',
                     headers: {
@@ -196,28 +201,22 @@
                     },
                     body: JSON.stringify({
                         token: token,
-                        telegram_id: telegramId
+                        telegram_id: telegram_id
                     })
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
+
                 const result = await response.json();
                 if (result.status === 'success') {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
                     getFileButton.disabled = true;
-                    return true;
+                    return;
                 }
-                throw new Error(result.error || 'Unknown error');
+                // If API fails, fallback to telegram link
+                window.location.href = `https://t.me/KakifilemBot?start=${token}`;
             } catch (error) {
                 console.error('Error:', error);
-                if (fallbackToTelegram) {
-                    const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
-                    window.location.href = telegramLink;
-                }
-                return false;
+                // On error, fallback to telegram link
+                window.location.href = `https://t.me/KakifilemBot?start=${token}`;
             }
         }
 

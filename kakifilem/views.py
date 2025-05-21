@@ -7,6 +7,7 @@ def index(request):
 def countdown(request):
     context = {
         'bot_api_url': settings.BOT_API_URL,
-        'request': request  # Pass request to template
+        'telegram_id': request.GET.get('telegram_id', ''),  # Get telegram_id from URL
+        'request': request
     }
     return render(request, 'countdown.html', context)
