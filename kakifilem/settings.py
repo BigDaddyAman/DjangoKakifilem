@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
+    'corsheaders',  # Add this line
 ]
 
 MIDDLEWARE = [
@@ -152,13 +152,10 @@ SESSION_COOKIE_SECURE = False
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-# Bot API URL
-BOT_API_URL = 'https://kakifilembot-production.up.railway.app'
-
 # Add CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
-CORS_ALLOW_METHODS = [
-    'GET',
-    'POST', 
-    'OPTIONS'
+CORS_ALLOWED_ORIGINS = [
+    "https://bot.kakifilem.com",
 ]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = ['GET', 'POST', 'OPTIONS']
+CORS_ALLOW_HEADERS = ['Content-Type']
