@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
 import logging
+from database import get_user_by_token  # Add this import
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -10,15 +11,16 @@ def index(request):
     return render(request, 'index.html')
 
 def countdown(request):
-    telegram_id = request.GET.get('telegram_id')
     token = request.GET.get('token')
     video_name = request.GET.get('videoName')
-
-    # Handle no telegram_id case
-    if not telegram_id or telegram_id == 'None':
-        # Redirect to Telegram bot immediately
+    
+    # Get telegram_id from database using token
+    telegram_id = get_user_by_token(token)
+    
+    if not telegram_id:
+        # If no user found, redirect to bot
         return redirect(f'https://t.me/KakifilemBot?start={token}')
-        
+    
     context = {
         'bot_api_url': settings.BOT_API_URL,
         'telegram_id': telegram_id,
