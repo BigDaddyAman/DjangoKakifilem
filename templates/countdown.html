@@ -199,22 +199,26 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         token: token,
                         telegram_id: telegramId
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
                 
-                if (response.ok) {
+                if (result.status === 'success') {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
                     getFileButton.disabled = true;
-                } else if (fallbackToTelegram) {
-                    const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
-                    window.open(telegramLink, '_blank', 'noopener,noreferrer');
-                    getFileButton.textContent = "Buka Telegram";
+                } else {
+                    throw new Error(result.error || 'Unknown error');
                 }
             } catch (error) {
                 console.error('Error:', error);

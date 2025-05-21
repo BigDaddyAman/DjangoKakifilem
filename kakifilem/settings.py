@@ -153,7 +153,7 @@ USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
 # Bot API URL
-BOT_API_URL = os.getenv('BOT_API_URL', 'http://localhost:8080')
+BOT_API_URL = 'https://kakifilembot-production.up.railway.app'
 
 # Add CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
