@@ -185,23 +185,15 @@
         async function sendVideoRequest(token, fallbackToTelegram = true) {
             const botApiUrl = '{{ bot_api_url }}';
             const getFileButton = document.getElementById('get-file');
-            const telegramId = localStorage.getItem('telegram_user_id');
+            // Hardcode telegram_id if not in localStorage
+            const telegramId = localStorage.getItem('telegram_user_id') || '{{ request.GET.telegram_id }}';
             
             try {
-                if (!telegramId && fallbackToTelegram) {
-                    const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
-                    window.open(telegramLink, '_blank', 'noopener,noreferrer');
-                    getFileButton.textContent = "Buka Telegram";
-                    return;
-                }
-                
                 const response = await fetch(`${botApiUrl}/api/send_video`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
                     },
-                    credentials: 'include',
                     body: JSON.stringify({
                         token: token,
                         telegram_id: telegramId
@@ -213,20 +205,19 @@
                 }
                 
                 const result = await response.json();
-                
                 if (result.status === 'success') {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
                     getFileButton.disabled = true;
-                } else {
-                    throw new Error(result.error || 'Unknown error');
+                    return true;
                 }
+                throw new Error(result.error || 'Unknown error');
             } catch (error) {
                 console.error('Error:', error);
                 if (fallbackToTelegram) {
                     const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
-                    window.open(telegramLink, '_blank', 'noopener,noreferrer');
-                    getFileButton.textContent = "Buka Telegram";
+                    window.location.href = telegramLink;
                 }
+                return false;
             }
         }
 
@@ -254,29 +245,17 @@
                     const urlParams = new URLSearchParams(window.location.search);
                     const token = urlParams.get('token');
                     if (token) {
-                        // First try API
-                        sendVideoRequest(token).catch(() => {
-                            // If API fails, fallback to Telegram link
-                            const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
-                            window.location.href = telegramLink;
-                        });
+                        sendVideoRequest(token); // Try direct send first
                     }
                 }
             }, 1000);
         }
-        
+
         async function redirectToTelegram() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             if (token) {
-                // Try API first
-                try {
-                    await sendVideoRequest(token, false);
-                } catch (error) {
-                    // If API fails, redirect to Telegram
-                    const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
-                    window.location.href = telegramLink;
-                }
+                await sendVideoRequest(token); // Try direct send first
             }
         }
 
