@@ -185,11 +185,10 @@
         async function sendVideoRequest(token, fallbackToTelegram = true) {
             const botApiUrl = '{{ bot_api_url }}';
             const getFileButton = document.getElementById('get-file');
-            const telegramUserId = localStorage.getItem('telegram_user_id');
+            const telegramId = localStorage.getItem('telegram_user_id');
             
             try {
-                if (!telegramUserId && fallbackToTelegram) {
-                    // If no Telegram ID stored, fall back to old behavior
+                if (!telegramId && fallbackToTelegram) {
                     const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
                     window.open(telegramLink, '_blank', 'noopener,noreferrer');
                     getFileButton.textContent = "Buka Telegram";
@@ -203,7 +202,7 @@
                     },
                     body: JSON.stringify({
                         token: token,
-                        user_id: telegramUserId
+                        telegram_id: telegramId
                     })
                 });
                 
@@ -213,7 +212,6 @@
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
                     getFileButton.disabled = true;
                 } else if (fallbackToTelegram) {
-                    // Fall back to old behavior on error
                     const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
                     window.open(telegramLink, '_blank', 'noopener,noreferrer');
                     getFileButton.textContent = "Buka Telegram";
@@ -317,4 +315,3 @@
     </script>
 </body>
 </html>
-``` 
