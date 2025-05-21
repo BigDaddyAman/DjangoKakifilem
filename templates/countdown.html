@@ -202,19 +202,12 @@
                     })
                 });
 
-                const result = await response.json();
-                
-                if (result.status === 'success') {
+                if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    getFileButton.disabled = true;
-                    
-                    // Force open ads in new tab
-                    if (result.ads_url && result.force_redirect) {
-                        window.location.href = result.ads_url;
-                    }
+                    window.location.href = 'https://otieu.com/4/9285066'; // Direct ads redirect
                     return true;
                 } else {
-                    throw new Error(result.message);
+                    throw new Error('Failed to send video');
                 }
             } catch (error) {
                 console.error('Error:', error);
