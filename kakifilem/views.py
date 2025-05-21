@@ -1,27 +1,46 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
 import psycopg2
-from urllib.parse import urlparse
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_user_by_token(token):
     """Get telegram_id for a given token"""
     if not token:
         return None
         
+    conn = None
+    cur = None
     try:
-        conn = psycopg2.connect(settings.DATABASES['default']['url'])
+        # Get database URL from settings
+        db_settings = settings.DATABASES['default']
+        conn = psycopg2.connect(
+            dbname=db_settings['NAME'],
+            user=db_settings['USER'],
+            password=db_settings['PASSWORD'],
+            host=db_settings['HOST'],
+            port=db_settings['PORT']
+        )
         cur = conn.cursor()
+        
         cur.execute("""
-            SELECT user_id FROM video_tokens WHERE token = %s AND expires_at > NOW()
+            SELECT user_id FROM video_tokens 
+            WHERE token = %s AND expires_at > NOW()
+            LIMIT 1
         """, (token,))
+        
         result = cur.fetchone()
         return result[0] if result else None
+        
     except Exception as e:
-        print(f"Database error: {e}")
+        logger.error(f"Database error: {e}")
         return None
     finally:
-        cur.close()
-        conn.close()
+        if cur:
+            cur.close()
+        if conn:
+            conn.close()
 
 def index(request):
     return render(request, 'index.html')
@@ -35,7 +54,7 @@ def countdown(request):
     
     context = {
         'bot_api_url': settings.BOT_API_URL,
-        'telegram_id': telegram_id or '',  # Use empty string if None
+        'telegram_id': telegram_id or '',
         'token': token,
         'video_name': video_name
     }
