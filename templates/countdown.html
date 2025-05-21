@@ -202,18 +202,23 @@
                     })
                 });
 
-                const result = await response.json();
-                if (result.status === 'success') {
+                // Wait a bit to ensure video is sent
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Don't throw error, just check status
+                if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Open monetag ads after successful send
                     window.open('https://otieu.com/4/9285066', '_blank');
                     return true;
                 } else {
-                    throw new Error(result.error || 'Failed to send video');
+                    getFileButton.textContent = "Cuba Sekali Lagi";
+                    getFileButton.disabled = false;
+                    return false;
                 }
             } catch (error) {
                 console.error('Error:', error);
-                getFileButton.textContent = "Gagal Menghantar Video ❌";
+                // Don't show error, just retry option
+                getFileButton.textContent = "Cuba Sekali Lagi";
                 getFileButton.disabled = false;
                 return false;
             }
