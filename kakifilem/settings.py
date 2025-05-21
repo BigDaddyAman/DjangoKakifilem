@@ -39,9 +39,9 @@ BOT_API_URL = os.getenv('BOT_API_URL', 'https://kakifilembot-production.up.railw
 
 # Application definition
 
+# Remove auth app and keep only essential apps
 INSTALLED_APPS = [
-    'django.contrib.auth',  # Need this
-    'django.contrib.contenttypes',  # And this
+    'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -90,6 +90,9 @@ DATABASES = {
         conn_max_age=600
     )
 }
+
+# Add a database router to prevent auth migrations
+DATABASE_ROUTERS = ['kakifilem.database_router.DefaultRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
