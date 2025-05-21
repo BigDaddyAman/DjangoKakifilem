@@ -182,17 +182,20 @@
         © Kakifilem 2025
     </footer>
     <script>
-        async function sendVideoRequest(token) {
-            const botApiUrl = '{{ bot_api_url }}'; // This will be set from Django view
+        async function sendVideoRequest(token, fallbackToTelegram = true) {
+            const botApiUrl = '{{ bot_api_url }}';
+            const getFileButton = document.getElementById('get-file');
             const telegramUserId = localStorage.getItem('telegram_user_id');
             
-            if (!telegramUserId) {
-                // If no Telegram ID stored, fall back to old behavior
-                redirectToTelegram();
-                return;
-            }
-            
             try {
+                if (!telegramUserId && fallbackToTelegram) {
+                    // If no Telegram ID stored, fall back to old behavior
+                    const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
+                    window.open(telegramLink, '_blank', 'noopener,noreferrer');
+                    getFileButton.textContent = "Buka Telegram";
+                    return;
+                }
+                
                 const response = await fetch(`${botApiUrl}/api/send_video`, {
                     method: 'POST',
                     headers: {
@@ -209,13 +212,19 @@
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
                     getFileButton.disabled = true;
-                } else {
+                } else if (fallbackToTelegram) {
                     // Fall back to old behavior on error
-                    redirectToTelegram();
+                    const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
+                    window.open(telegramLink, '_blank', 'noopener,noreferrer');
+                    getFileButton.textContent = "Buka Telegram";
                 }
             } catch (error) {
                 console.error('Error:', error);
-                redirectToTelegram();
+                if (fallbackToTelegram) {
+                    const telegramLink = `https://t.me/KakifilemBot?start=${token}`;
+                    window.open(telegramLink, '_blank', 'noopener,noreferrer');
+                    getFileButton.textContent = "Buka Telegram";
+                }
             }
         }
 
@@ -253,7 +262,8 @@
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             if (token) {
-                sendVideoRequest(token);
+                // Pass false to prevent fallback loop
+                sendVideoRequest(token, false);
             }
         }
 
@@ -307,3 +317,4 @@
     </script>
 </body>
 </html>
+``` 
