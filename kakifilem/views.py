@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.conf import settings
 import logging
 
@@ -10,16 +10,20 @@ def index(request):
     return render(request, 'index.html')
 
 def countdown(request):
-    telegram_id = request.GET.get('telegram_id')
+    telegram_id = request.GET.get('telegram_id', '')
     token = request.GET.get('token')
     video_name = request.GET.get('videoName')
     
+    # Convert 'None' string to empty string
+    if telegram_id == 'None':
+        telegram_id = ''
+        
     logger.info(f"Countdown request - Token: {token}, Video: {video_name}, Telegram ID: {telegram_id}")
     
-    # Don't redirect immediately, always show countdown
     context = {
         'bot_api_url': settings.BOT_API_URL,
         'telegram_id': telegram_id,
-        'request': request
+        'token': token,
+        'video_name': video_name
     }
     return render(request, 'countdown.html', context)

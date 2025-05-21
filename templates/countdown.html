@@ -187,6 +187,12 @@
             const getFileButton = document.getElementById('get-file');
             const telegram_id = '{{ telegram_id }}';
             
+            // If no telegram_id, redirect to Telegram
+            if (!telegram_id) {
+                window.location.href = `https://t.me/KakifilemBot?start=${token}`;
+                return;
+            }
+
             try {
                 const response = await fetch(`${botApiUrl}/api/send_video`, {
                     method: 'POST',
@@ -203,18 +209,17 @@
                 if (result.status === 'success') {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
                     getFileButton.disabled = true;
-                    
                     // Open monetag ads after successful send
                     window.open('https://otieu.com/4/9285066', '_blank');
                     return true;
                 }
-                throw new Error(result.error || 'Failed to send video');
+                // If API call fails, redirect to Telegram
+                window.location.href = `https://t.me/KakifilemBot?start=${token}`;
+                return false;
             } catch (error) {
                 console.error('Error:', error);
-                // Only fallback to Telegram if we don't have telegram_id
-                if (!telegram_id) {
-                    window.location.href = `https://t.me/KakifilemBot?start=${token}`;
-                }
+                // On error, redirect to Telegram
+                window.location.href = `https://t.me/KakifilemBot?start=${token}`;
                 return false;
             }
         }
