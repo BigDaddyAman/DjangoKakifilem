@@ -204,14 +204,12 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Create and click a temporary link to open in new tab
-                    const link = document.createElement('a');
-                    link.href = 'https://otieu.com/4/9285066';
-                    link.target = '_blank';
-                    link.rel = 'noopener noreferrer';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    // Trigger the redirect as a user interaction
+                    const redirectButton = document.createElement('button');
+                    redirectButton.style.display = 'none';
+                    document.body.appendChild(redirectButton);
+                    redirectButton.onclick = () => window.location.href = 'https://otieu.com/4/9285066';
+                    redirectButton.click();
                     return true;
                 } else {
                     throw new Error('Failed to send video');
