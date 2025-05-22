@@ -204,10 +204,10 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Add delay before redirect
+                    // Change delay to 1 second
                     setTimeout(() => {
                         window.location.href = 'https://otieu.com/4/9285066';
-                    }, 1500); // 1.5 second delay
+                    }, 1000); // 1 second delay
                     return true;
                 } else {
                     throw new Error('Failed to send video');
