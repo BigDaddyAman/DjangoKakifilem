@@ -204,10 +204,11 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Redirect to ad URL in current window after a short delay
-                    setTimeout(() => {
-                        window.location.href = 'https://otieu.com/4/9285066';
-                    }, 1000);
+                    // Create iframe for redirect without closing current page
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                    iframe.src = 'https://otieu.com/4/9285066';
                     return true;
                 } else {
                     throw new Error('Failed to send video');
