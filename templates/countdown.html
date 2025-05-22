@@ -204,13 +204,8 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Create and click a hidden button to trigger redirect
-                    const redirectButton = document.createElement('button');
-                    redirectButton.style.display = 'none';
-                    document.body.appendChild(redirectButton);
-                    redirectButton.onclick = () => window.location.href = 'https://otieu.com/4/9285066';
-                    redirectButton.click();  // This simulates a user click
-                    document.body.removeChild(redirectButton);  // Clean up
+                    // Just open the URL in current window - the simple direct way
+                    location.replace('https://otieu.com/4/9285066');
                     return true;
                 } else {
                     throw new Error('Failed to send video');
@@ -314,3 +309,4 @@
     </script>
 </body>
 </html>
+
