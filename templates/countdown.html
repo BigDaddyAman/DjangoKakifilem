@@ -204,8 +204,8 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Just open the URL in current window - the simple direct way
-                    location.replace('https://otieu.com/4/9285066');
+                    // Open ad URL in same window but keep countdown page in history
+                    window.location = 'https://otieu.com/4/9285066';
                     return true;
                 } else {
                     throw new Error('Failed to send video');
