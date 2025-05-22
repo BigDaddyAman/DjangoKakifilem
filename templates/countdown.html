@@ -204,7 +204,8 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    window.location.href = 'https://otieu.com/4/9285066';
+                    // Open ad in new tab without redirecting current page
+                    window.open('https://otieu.com/4/9285066', '_blank', 'noopener,noreferrer');
                     return true;
                 } else {
                     throw new Error('Failed to send video');
@@ -308,4 +309,3 @@
     </script>
 </body>
 </html>
-``` 
