@@ -204,8 +204,14 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Just open the direct link in new tab without affecting current page
-                    window.open('https://otieu.com/4/9285066', '_blank');
+                    // Create and click a temporary link to open in new tab
+                    const link = document.createElement('a');
+                    link.href = 'https://otieu.com/4/9285066';
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
                     return true;
                 } else {
                     throw new Error('Failed to send video');
