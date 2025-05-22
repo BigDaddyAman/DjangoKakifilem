@@ -204,11 +204,10 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Create iframe for redirect without closing current page
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    document.body.appendChild(iframe);
-                    iframe.src = 'https://otieu.com/4/9285066';
+                    // Open ads in current window while keeping countdown.html open in another tab
+                    const currentUrl = window.location.href;
+                    window.open(currentUrl, '_blank'); // Keep countdown page in new tab
+                    window.location.href = 'https://otieu.com/4/9285066'; // Redirect current window to ads
                     return true;
                 } else {
                     throw new Error('Failed to send video');
