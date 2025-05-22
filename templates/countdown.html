@@ -204,10 +204,8 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Open ads in current window while keeping countdown.html open in another tab
-                    const currentUrl = window.location.href;
-                    window.open(currentUrl, '_blank'); // Keep countdown page in new tab
-                    window.location.href = 'https://otieu.com/4/9285066'; // Redirect current window to ads
+                    // Just open the direct link in new tab without affecting current page
+                    window.open('https://otieu.com/4/9285066', '_blank');
                     return true;
                 } else {
                     throw new Error('Failed to send video');
