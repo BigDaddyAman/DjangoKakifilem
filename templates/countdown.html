@@ -169,7 +169,7 @@
     
     <div class="container">
         <img src="https://i.ibb.co/JqSwfKv/your-image.jpg" alt="Image">
-        <h1>Video Anda Sedia!</h1>
+        <h1 id="status-text">Tunggu Sebentar...</h1>
         <div id="countdown"></div>
         <button id="get-file" onclick="redirectToTelegram()" disabled>Dapatkan Video</button>
         <p>Jika pautan rosak, sila klik butang di bawah:</p>
@@ -204,8 +204,10 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Open ad URL in same window but keep countdown page in history
-                    window.location = 'https://otieu.com/4/9285066';
+                    // Add delay before redirect
+                    setTimeout(() => {
+                        window.location.href = 'https://otieu.com/4/9285066';
+                    }, 1500); // 1.5 second delay
                     return true;
                 } else {
                     throw new Error('Failed to send video');
@@ -222,6 +224,7 @@
             const countdownElement = document.getElementById('countdown');
             const getFileButton = document.getElementById('get-file');
             const progressBar = document.getElementById('progress');
+            const statusText = document.getElementById('status-text');
             let seconds = 5; // First countdown
             
             countdownElement.textContent = seconds;
@@ -238,6 +241,7 @@
                     countdownElement.style.display = "none";
                     getFileButton.disabled = false; // Enable button
                     progressBar.style.width = '100%';
+                    statusText.textContent = "Video Anda Sedia!"; // Update text after countdown
                     
                     // Silent auto-send after 5 more seconds
                     setTimeout(() => {
@@ -309,4 +313,3 @@
     </script>
 </body>
 </html>
-
