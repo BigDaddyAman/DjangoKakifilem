@@ -43,6 +43,7 @@ urlpatterns = [
     path('favicon-32x32.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon-32x32.png')),
     path('favicon-16x16.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon-16x16.png')),
     path('site.webmanifest', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/site.webmanifest')),
+    path('<str:code>/', views.expand_short_url, name='expand_short_url'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Add custom error handlers

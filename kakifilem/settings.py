@@ -89,6 +89,9 @@ DATABASES = {
     )
 }
 
+# Redis configuration 
+REDIS_URL = os.getenv('REDIS_PUBLIC_URL', 'redis://default:QgzNKpIEYeWFRjRXWjmyuQSUFjWDAQgb@crossover.proxy.rlwy.net:14140')
+
 # Add a database router to prevent auth migrations
 DATABASE_ROUTERS = ['kakifilem.database_router.DefaultRouter']
 

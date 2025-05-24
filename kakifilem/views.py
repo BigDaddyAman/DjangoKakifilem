@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 import psycopg2
 import logging
+import os
+import redis
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -59,3 +62,24 @@ def countdown(request):
         'video_name': video_name
     }
     return render(request, 'countdown.html', context)
+
+def expand_short_url(request, code):
+    """Handle short URL redirects"""
+    try:
+        # Connect to Redis using settings
+        redis_client = redis.from_url(settings.REDIS_URL)
+        
+        # Get URL data
+        url_data = redis_client.get(f"url:{code}")
+        if not url_data:
+            return redirect('/')
+            
+        # Parse the JSON data
+        params = json.loads(url_data)
+        
+        # Redirect to countdown page with parameters
+        return redirect(f'/countdown/?token={params["token"]}&videoName={params["videoName"]}')
+        
+    except Exception as e:
+        logger.error(f"Error expanding URL: {e}")
+        return redirect('/')
