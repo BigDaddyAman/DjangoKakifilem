@@ -139,9 +139,19 @@
 
         function startCountdown() {
             const countdownElement = document.getElementById('countdown');
-            let seconds = 7;
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const videoName = urlParams.get('videoName');
 
+            if (!token || !videoName) {
+                addLog('No token or video name found');
+                countdownElement.style.display = 'none';
+                return;
+            }
+
+            let seconds = 7; // Changed back to 7 seconds
             addLog('Starting countdown...');
+            countdownElement.textContent = seconds;
 
             const interval = setInterval(() => {
                 seconds--;
@@ -149,33 +159,16 @@
                 
                 if (seconds <= 0) {
                     clearInterval(interval);
-                    countdownElement.style.display = 'none';
-                    addLog('Countdown completed');
-                    redirectToCountdown();
+                    addLog('Redirecting to countdown...');
+                    window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
                 }
             }, 1000);
-        }
-
-        function redirectToCountdown() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-            const videoName = urlParams.get('videoName');
-            
-            if (token && videoName) {
-                addLog('Redirecting to countdown page...');
-                const countdownLink = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
-                window.location.href = countdownLink;
-            } else {
-                addLog('Error: No token or video name found');
-                alert("No token or video name found in URL");
-            }
         }
 
         // Start countdown when page loads
         window.onload = function() {
             addLog('Page loaded');
             startCountdown();
-            checkAdScripts(); // Check ad scripts status
         };
     </script>
 </body>

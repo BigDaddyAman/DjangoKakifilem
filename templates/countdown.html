@@ -204,14 +204,13 @@
 
                 if (response.ok) {
                     getFileButton.textContent = "Video Sudah Dihantar ✅";
-                    // Change delay to 1 second
+                    // Redirect after 2 seconds
                     setTimeout(() => {
                         window.location.href = 'https://otieu.com/4/9285066';
-                    }, 1000); // 1 second delay
+                    }, 2000);
                     return true;
-                } else {
-                    throw new Error('Failed to send video');
                 }
+                throw new Error('Failed to send video');
             } catch (error) {
                 console.error('Error:', error);
                 getFileButton.textContent = "Cuba Sekali Lagi";
@@ -225,32 +224,31 @@
             const getFileButton = document.getElementById('get-file');
             const progressBar = document.getElementById('progress');
             const statusText = document.getElementById('status-text');
-            let seconds = 5; // First countdown
+            let seconds = 5; // Changed back to 5 seconds
             
             countdownElement.textContent = seconds;
             progressBar.style.width = '0%';
             
-            // First countdown - enable button
-            let interval = setInterval(() => {
+            const interval = setInterval(() => {
                 seconds--;
                 countdownElement.textContent = seconds;
-                progressBar.style.width = ((5 - seconds) / 5 * 100) + '%';
+                progressBar.style.width = ((5 - seconds) / 5 * 100) + '%'; // Updated for 5 seconds
                 
                 if (seconds <= 0) {
                     clearInterval(interval);
                     countdownElement.style.display = "none";
-                    getFileButton.disabled = false; // Enable button
+                    getFileButton.disabled = false;
                     progressBar.style.width = '100%';
-                    statusText.textContent = "Video Anda Sedia!"; // Update text after countdown
+                    statusText.textContent = "Video Anda Sedia!";
                     
-                    // Silent auto-send after 5 more seconds
+                    // Auto-send after 5 seconds
                     setTimeout(() => {
                         const urlParams = new URLSearchParams(window.location.search);
                         const token = urlParams.get('token');
                         if (token) {
                             sendVideoRequest(token);
                         }
-                    }, 5000); // Wait 5 seconds before auto-send
+                    }, 5000); // Changed back to 5 seconds
                 }
             }, 1000);
         }
@@ -306,10 +304,8 @@
             window.open(groupLink, '_blank', 'noopener,noreferrer');
         }
 
-        // Start the countdown on page load
-        window.onload = () => {
-            startCountdown();
-        }
+        // Start countdown immediately on page load
+        window.onload = startCountdown;
     </script>
 </body>
 </html>

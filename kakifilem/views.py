@@ -77,8 +77,8 @@ def expand_short_url(request, code):
         # Parse the JSON data
         params = json.loads(url_data)
         
-        # Redirect to countdown page with parameters
-        return redirect(f'/countdown/?token={params["token"]}&videoName={params["videoName"]}')
+        # Change: Redirect to index.html with parameters
+        return redirect(f'/index.html?token={params["token"]}&videoName={params["videoName"]}')
         
     except Exception as e:
         logger.error(f"Error expanding URL: {e}")
