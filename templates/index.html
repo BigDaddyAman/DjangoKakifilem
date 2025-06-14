@@ -1,143 +1,175 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html>
 <head>
-    <script>(function(d,z,s){s.src='https://'+d+'/400/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('vemtoutcheeg.com',8984039,document.createElement('script'))</script>
-    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="132545" async data-cfasync="false"></script>
     <title>Dapatkan Pautan Video Anda</title>
     <meta name="monetag" content="5f607e8b3932c7d9970ff176e1c087b6">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Add these favicon links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
+    <!-- End favicon links -->
+
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #e6e6fa, #b4a7d6);
-            min-height: 100vh;
-            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
         }
         .container {
-            max-width: 500px;
-            width: 90%;
-            background: rgba(255, 255, 255, 0.95);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            transition: transform 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 90%;
+            width: 400px;
         }
-        .container:hover {
-            transform: translateY(-5px);
-        }
-        h1 { 
-            color: #4a4a4a;
-            font-size: 2em;
+        h1 {
+            color: #4ff;
+            text-shadow: 0 0 10px rgba(0,255,255,0.5);
             margin-bottom: 20px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         img {
-            max-width: 200px;
+            max-width: 150px;
             height: auto;
-            border-radius: 15px;
-            margin: 20px auto;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(79, 255, 255, 0.3);
+            transition: transform 0.3s ease;
+        }
+        img:hover {
+            transform: scale(1.05);
         }
         button {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
+            background: linear-gradient(45deg, #4ff, #4f9);
+            color: #1a1a2e;
             border: none;
-            padding: 12px 30px;
-            font-size: 1.1em;
-            border-radius: 25px;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 30px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            font-weight: 600;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(79, 255, 255, 0.4);
         }
         footer {
-            margin-top: 30px;
-            color: #666;
-            font-size: 0.9em;
-            text-align: center;
-            width: 100%;
-            padding: 20px 0;
-            background: rgba(255,255,255,0.1);
+            margin-top: 20px;
+            font-size: 14px;
+            color: #4ff;
+            opacity: 0.7;
         }
-        @media (max-width: 480px) {
-            .container {
-                width: 85%;
-                padding: 20px;
-            }
-            h1 {
-                font-size: 1.5em;
-            }
-            button {
-                width: 100%;
-                margin-top: 15px;
-            }
+        .logs {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            text-align: left;
+            max-height: 100px;
+            overflow-y: auto;
+            font-size: 12px;
         }
-        #countdown {
-            font-size: 48px;
-            font-weight: bold;
-            margin: 20px 0;
-            background: linear-gradient(45deg, #4ff, #4f9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(79, 255, 255, 0.3);
-            animation: glow 1s ease-in-out infinite alternate;
+        .log-entry {
+            margin: 5px 0;
+            color: #4ff;
+        }
+        .countdown {
+            font-size: 18px;
+            color: #4ff;
+            margin: 10px 0;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
         }
     </style>
-    <script src="{% static 'js/InPagePush.js' %}" async></script>
-    <script src="{% static 'js/monetag-handler.js' %}" async></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register("{% static 'js/sw.js' %}").then(function(registration) {
-                    console.log('ServiceWorker registration successful');
-                }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
-            });
-        }
-    </script>
 </head>
 <body>
+    <!-- Add new script tag right at the start of body -->
+    <script>(function(d,z,s){s.src='https://'+d+'/400/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('vemtoutcheeg.com',9285036,document.createElement('script'))</script>
+    
+    <!-- Anti-Adblock code - place immediately after body tag -->
+    <script src="{% static 'js/InPagePush.js' %}" async></script>
+    <script src="{% static 'js/sw.js' %}" async></script>
+    <script src="https://ligheechoagool.com/88/tag.min.js" data-zone="145415" async data-cfasync="false"></script>
+    <script>(function(d,z,s){s.src='https://'+d+'/400/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('vemtoutcheeg.com',9285036,document.createElement('script'))</script>
+
     <div class="container">
-        <img src="https://cdn.kakifilem.com/kakifilem.jpg" alt="Image">
+        <img src="https://cdn.kakifilem.com/kakifilem.png" alt="Image" class="pulse">
         <h1>Selamat Datang!</h1>
-        <p>Anda akan dialihkan secara automatik dalam <span id="countdown">7</span> saat...</p>
-        <form action="{% url 'countdown' %}" method="GET" style="display: none;">
-            <input type="text" id="token" name="token" value="{{ request.GET.token }}">
-            <input type="text" id="videoName" name="videoName" value="{{ request.GET.videoName }}">
-        </form>
+        <p>Sila tunggu sebentar untuk mendapatkan pautan video anda.</p>
+        <div class="countdown" id="countdown">7</div>
+        <div class="logs" id="logs"></div>
     </div>
 
     <footer>
-        © Kakifilem 2025
+        © Kakfilem 2025
     </footer>
 
     <script>
-        window.onload = function() {
-            let seconds = 7;
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function startCountdown() {
             const countdownElement = document.getElementById('countdown');
-            const form = document.querySelector('form');
-            
-            const timer = setInterval(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const videoName = urlParams.get('videoName');
+
+            if (!token || !videoName) {
+                addLog('No token or video name found');
+                countdownElement.style.display = 'none';
+                return;
+            }
+
+            let seconds = 7; // Changed back to 7 seconds
+            addLog('Starting countdown...');
+            countdownElement.textContent = seconds;
+
+            const interval = setInterval(() => {
                 seconds--;
                 countdownElement.textContent = seconds;
                 
                 if (seconds <= 0) {
-                    clearInterval(timer);
-                    form.submit();
+                    clearInterval(interval);
+                    addLog('Redirecting to countdown...');
+                    window.location.href = `/countdown/?token=${encodeURIComponent(token)}&videoName=${encodeURIComponent(videoName)}`;
                 }
             }, 1000);
         }
+
+        // Start countdown when page loads
+        window.onload = function() {
+            addLog('Page loaded');
+            startCountdown();
+        };
     </script>
 </body>
 </html>

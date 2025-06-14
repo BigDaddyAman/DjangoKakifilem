@@ -1,10 +1,17 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html>
 <head>
     <title>Video Anda Sedia</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://kulroakonsu.net/88/tag.min.js" data-zone="119209" async data-cfasync="false"></script>
+    
+    <!-- Add these favicon links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'favicon/site.webmanifest' %}">
+    <!-- End favicon links -->
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -30,40 +37,41 @@
             position: relative;
             overflow: hidden;
         }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
         @keyframes rotate {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 20px rgba(79, 255, 255, 0.3); }
-            50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(79, 255, 255, 0.5); }
-            100% { transform: scale(1); box-shadow: 0 0 20px rgba(79, 255, 255, 0.3); }
-        }
-        @keyframes glow {
-            from { filter: drop-shadow(0 0 5px rgba(79, 255, 255, 0.6)); }
-            to { filter: drop-shadow(0 0 15px rgba(79, 255, 255, 0.8)); }
-        }
-        @keyframes buttonGlow {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-        
         h1 {
             color: #4ff;
             text-shadow: 0 0 10px rgba(0,255,255,0.5);
             margin-bottom: 20px;
             font-size: 28px;
         }
-        
         img {
             max-width: 150px;
             height: auto;
             margin-bottom: 20px;
             border-radius: 50%;
             box-shadow: 0 0 20px rgba(79, 255, 255, 0.3);
+            transition: transform 0.3s ease;
             animation: pulse 2s infinite;
         }
-        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(79, 255, 255, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(79, 255, 255, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(79, 255, 255, 0.3); }
+        }
         #countdown {
             font-size: 48px;
             font-weight: bold;
@@ -74,7 +82,10 @@
             text-shadow: 0 0 10px rgba(79, 255, 255, 0.3);
             animation: glow 1s ease-in-out infinite alternate;
         }
-        
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px rgba(79, 255, 255, 0.6)); }
+            to { filter: drop-shadow(0 0 15px rgba(79, 255, 255, 0.8)); }
+        }
         button {
             background: linear-gradient(45deg, #4ff, #4f9);
             color: #1a1a2e;
@@ -91,13 +102,47 @@
             position: relative;
             overflow: hidden;
         }
-        
+        button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255,255,255,0.2);
+            transform: rotate(45deg);
+            transition: 0.5s;
+            animation: buttonGlow 2s linear infinite;
+        }
+        @keyframes buttonGlow {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        button:disabled {
+            background: linear-gradient(45deg, #ccc, #999);
+            cursor: not-allowed;
+            transform: none;
+        }
+        button:not(:disabled):hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(79, 255, 255, 0.4);
+        }
+        .link-button {
+            background: linear-gradient(45deg, #4ff, #06f);
+            margin-top: 15px;
+        }
         .report-button {
             background: linear-gradient(45deg, #f44, #f04);
             font-size: 14px;
             padding: 10px 20px;
         }
-        
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #4ff;
+            opacity: 0.7;
+            text-shadow: 0 0 5px rgba(79, 255, 255, 0.5);
+        }
         .progress-bar {
             width: 100%;
             height: 4px;
@@ -106,7 +151,6 @@
             bottom: 0;
             left: 0;
         }
-        
         .progress {
             width: 0%;
             height: 100%;
@@ -114,24 +158,20 @@
             transition: width 1s linear;
             box-shadow: 0 0 10px rgba(79, 255, 255, 0.5);
         }
-        
-        footer {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #4ff;
-            opacity: 0.7;
-            text-shadow: 0 0 5px rgba(79, 255, 255, 0.5);
-        }
     </style>
     <script src="{% static 'js/InPagePush.js' %}" async></script>
-    <script src="{% static 'js/monetag-handler.js' %}" async></script>
+    <script src="{% static 'js/sw.js' %}" async></script>
+    <script src="https://ligheechoagool.com/88/tag.min.js" data-zone="145415" async data-cfasync="false"></script>
+    <script>(function(s,u,z,p){s.src=u,s.setAttribute('data-zone',z),p.appendChild(s);})(document.createElement('script'),'https://shebudriftaiter.net/tag.min.js',8983926,document.body||document.documentElement)</script>
 </head>
 <body>
+    <script>(function(d,z,s){s.src='https://'+d+'/400/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('vemtoutcheeg.com',9285036,document.createElement('script'))</script>
+    
     <div class="container">
-        <img src="https://cdn.kakifilem.com/kakifilem.jpg" alt="Image">
-        <h1>Video Anda Sedia!</h1>
+        <img src="https://cdn.kakifilem.com/kakifilem.png" alt="Image">
+        <h1 id="status-text">Tunggu Sebentar...</h1>
         <div id="countdown"></div>
-        <button id="get-file" onclick="redirectToTelegram()" style="display: none;">Dapatkan Video</button>
+        <button id="get-file" onclick="redirectToTelegram()" disabled>Dapatkan Video</button>
         <p>Jika pautan rosak, sila klik butang di bawah:</p>
         <button class="report-button" onclick="redirectToGroup()">Report Issue</button>
         <div class="progress-bar">
@@ -141,15 +181,50 @@
     <footer>
         © Kakifilem 2025
     </footer>
-    
     <script>
-        const token = "{{ token }}";
-        const videoName = "{{ video_name }}";
-        
+        async function sendVideoRequest(token) {
+            const botApiUrl = '{{ bot_api_url }}';
+            const getFileButton = document.getElementById('get-file');
+            const telegram_id = '{{ telegram_id }}';
+
+            try {
+                getFileButton.textContent = "Menghantar Video...";
+                getFileButton.disabled = true;
+
+                const response = await fetch(`${botApiUrl}/api/send_video`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        telegram_id: telegram_id
+                    })
+                });
+
+                if (response.ok) {
+                    getFileButton.textContent = "Video Sudah Dihantar ✅";
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = 'https://otieu.com/4/9285066';
+                    }, 2000);
+                    return true;
+                }
+                throw new Error('Failed to send video');
+            } catch (error) {
+                console.error('Error:', error);
+                getFileButton.textContent = "Cuba Sekali Lagi";
+                getFileButton.disabled = false;
+                return false;
+            }
+        }
+
         function startCountdown() {
             const countdownElement = document.getElementById('countdown');
+            const getFileButton = document.getElementById('get-file');
             const progressBar = document.getElementById('progress');
-            let seconds = 7;
+            const statusText = document.getElementById('status-text');
+            let seconds = 5; // Changed back to 5 seconds
             
             countdownElement.textContent = seconds;
             progressBar.style.width = '0%';
@@ -157,27 +232,51 @@
             const interval = setInterval(() => {
                 seconds--;
                 countdownElement.textContent = seconds;
-                progressBar.style.width = ((7 - seconds) / 7 * 100) + '%';
+                progressBar.style.width = ((5 - seconds) / 5 * 100) + '%'; // Updated for 5 seconds
                 
                 if (seconds <= 0) {
                     clearInterval(interval);
                     countdownElement.style.display = "none";
-                    redirectToTelegram(); // Auto redirect
+                    getFileButton.disabled = false;
+                    progressBar.style.width = '100%';
+                    statusText.textContent = "Video Anda Sedia!";
+                    
+                    // Auto-send after 5 seconds
+                    setTimeout(() => {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const token = urlParams.get('token');
+                        if (token) {
+                            sendVideoRequest(token);
+                        }
+                    }, 5000); // Changed back to 5 seconds
                 }
             }, 1000);
         }
 
-        function redirectToTelegram() {
+        async function redirectToTelegram() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
             if (token) {
-                const telegramLink = `https://t.me/Requestfilemv3_bot?start=${encodeURIComponent(token)}`;
-                console.log(`Sending token to: ${telegramLink}`);
-                window.open(telegramLink, '_blank', 'noopener,noreferrer');
-                document.getElementById('countdown').textContent = "Redirecting...";
+                await sendVideoRequest(token);
             }
         }
 
+        function copyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+
         function redirectToGroup() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoName = urlParams.get('videoName');
+            const token = urlParams.get('token');
             const timestamp = new Date().toLocaleString();
+            
+            // Show only first 8 characters of the token
             const maskedToken = token.substring(0, 8) + '...';
             
             const reportMessage = 
@@ -190,25 +289,23 @@
 
 🔑 Token: ${maskedToken}`;
 
-            navigator.clipboard.writeText(reportMessage).then(() => {
-                alert(
-                    "✨ Mesej laporan telah disalin!\n\n" +
-                    "Sila ikuti langkah-langkah ini:\n\n" +
-                    "1️⃣ Klik 'OK' untuk pergi ke kumpulan support\n" +
-                    "2️⃣ Tampal (CTRL+V) mesej laporan dalam kumpulan\n" +
-                    "3️⃣ Admin akan membantu anda secepat mungkin\n\n" +
-                    "Terima kasih atas kesabaran anda! 🙏"
-                );
-                window.open('https://t.me/KakifilemReport', '_blank');
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-                window.open('https://t.me/KakifilemReport', '_blank');
-            });
+            copyToClipboard(reportMessage);
+            
+            alert(
+                "✨ Mesej laporan telah disalin!\n\n" +
+                "Sila ikuti langkah-langkah ini:\n\n" +
+                "1️⃣ Klik 'OK' untuk pergi ke kumpulan support\n" +
+                "2️⃣ Tampal (CTRL+V) mesej laporan dalam kumpulan\n" +
+                "3️⃣ Admin akan membantu anda secepat mungkin\n\n" +
+                "Terima kasih atas kesabaran anda! 🙏"
+            );
+
+            const groupLink = `https://t.me/KakifilemReport1`;
+            window.open(groupLink, '_blank', 'noopener,noreferrer');
         }
 
-        window.onload = () => {
-            startCountdown();
-        }
+        // Start countdown immediately on page load
+        window.onload = startCountdown;
     </script>
 </body>
 </html>
