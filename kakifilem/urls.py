@@ -21,9 +21,9 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('index.html', views.index, name='index_html'),
-    path('countdown/', views.countdown, name='countdown'),
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),  # Add this line for www.kakifilem.com
+    path('download/', views.index, name='index'),  # Changed from root to /download/
+    path('download/countdown/', views.countdown, name='countdown'),  # Changed path
     # Static asset paths
     path('InPagePush.js', TemplateView.as_view(
         template_name='InPagePush.js',

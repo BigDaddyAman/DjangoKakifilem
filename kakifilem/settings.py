@@ -31,7 +31,14 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-e_rhw(l^0h!t8lgo(y_-#sx+ws
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Update ALLOWED_HOSTS to be more permissive
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'www.kakifilem.com',
+    'web-production-a47d1.up.railway.app',
+    'bot.kakifilem.com',
+    'kakifilem.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 # Add this near your other settings
 BOT_API_URL = os.getenv('BOT_API_URL', 'https://kakifilembot-production.up.railway.app')
@@ -159,7 +166,9 @@ USE_X_FORWARDED_PORT = True
 
 # Add CORS settings
 CORS_ALLOWED_ORIGINS = [
+    "https://www.kakifilem.com",
     "https://bot.kakifilem.com",
+    "https://kakifilem.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
@@ -175,6 +184,12 @@ CORS_ALLOW_HEADERS = [
     'origin',
     'user-agent',
     'x-requested-with',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://www.kakifilem.com',
+    'https://bot.kakifilem.com',
+    'https://kakifilem.com',
 ]
 
 LOGGING = {
