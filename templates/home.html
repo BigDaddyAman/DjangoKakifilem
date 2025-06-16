@@ -325,6 +325,59 @@
             margin: 0;
             text-align: center;
         }
+
+        /* Add styles for FAQ accordion */
+        .faq-section {
+            margin-top: 3rem;
+        }
+
+        .faq-question {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .faq-question:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(5px);
+        }
+
+        .faq-question h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #4ff;
+        }
+
+        .faq-question .icon {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-question.active .icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            opacity: 0;
+            margin-left: 1rem;
+            padding: 0 1rem;
+            border-left: 2px solid rgba(79, 255, 255, 0.3);
+        }
+
+        .faq-question.active + .faq-answer {
+            max-height: 200px;
+            opacity: 1;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+        }
     </style>
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -404,6 +457,20 @@
 
     <div class="container">
         <div class="about-section" id="about">
+            <h2>How Kakifilem Works</h2>
+            <div class="disclaimer-box">
+                <p>Kakifilem does not host, store, or distribute videos, movies, or files on our servers. Instead, we serve as an aggregator, providing links to third-party websites and applications, including:</p>
+                
+                <div class="platform-category">Streaming Platforms:</div>
+                <p>TikTok, YouTube, Dailymotion, VK, Uptobox</p>
+                
+                <div class="platform-category">File Hosting Services:</div>
+                <p>Mediafire, Google Drive, Openload, Picasaweb</p>
+                
+                <div class="platform-category">Communication Apps:</div>
+                <p>Telegram</p>
+            </div>
+
             <h2>Legal Disclaimer</h2>
             <p>Kakifilem operates within legal boundaries and does not take responsibility for the content, copyright compliance, or quality of media hosted on external platforms.</p>
             <p>Users are encouraged to ensure the legality of any third-party content they choose to access. For copyright concerns, please contact the respective file hosts or website owners directly.</p>
@@ -422,15 +489,24 @@
             <p><span class="check-mark">✅</span>Fast, user-friendly platform — like a torrent search engine for streaming and file-sharing links</p>
             <p><span class="check-mark">✅</span>Secure access to trusted third-party platforms</p>
 
-            <h2>❓ Frequently Asked Questions</h2>
-            <div class="faq-item">
-                <h3>Is this bot safe to use?</h3>
-                <p><span class="check-mark">✅</span>Yes — we only index files that are publicly available on Telegram. We do not collect or store any personal data from users. <a href="https://kakifilem.com/privacy" style="color: #4ff;">Read Our Privacy Policy</a></p>
-            </div>
+            <div class="faq-section">
+                <h2>❓ Frequently Asked Questions</h2>
+                
+                <div class="faq-question">
+                    <h3>Is this bot safe to use?</h3>
+                    <span class="icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p><span class="check-mark">✅</span>Yes — we only index files that are publicly available on Telegram. We do not collect or store any personal data from users. <a href="https://kakifilem.com/privacy" style="color: #4ff;">Read Our Privacy Policy</a></p>
+                </div>
 
-            <div class="faq-item">
-                <h3>Can I request new features?</h3>
-                <p><span>💡</span>Absolutely! We welcome your ideas. Simply join our <a href="https://t.me/kakifilemreport1" style="color: #4ff;">feedback channel</a> and share your suggestions.</p>
+                <div class="faq-question">
+                    <h3>Can I request new features?</h3>
+                    <span class="icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p><span>💡</span>Absolutely! We welcome your ideas. Simply join our <a href="https://t.me/kakifilemreport1" style="color: #4ff;">feedback channel</a> and share your suggestions.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -447,6 +523,21 @@
                 document.querySelector(this.getAttribute('href')).scrollIntoView({
                     behavior: 'smooth'
                 });
+            });
+        });
+
+        // Add FAQ accordion functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                // Close other questions
+                document.querySelectorAll('.faq-question').forEach(q => {
+                    if (q !== question) {
+                        q.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current question
+                question.classList.toggle('active');
             });
         });
     </script>
