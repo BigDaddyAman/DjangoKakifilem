@@ -90,12 +90,217 @@
             margin-top: 2rem;
             color: #4ff;
         }
+
+        /* Add new styles for contact section */
+        .contact-section {
+            text-align: center;
+            margin: 3rem auto;
+            max-width: 600px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .contact-button {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            background: linear-gradient(45deg, #4ff, #4f9);
+            color: #1a1a2e;
+        }
+
+        .contact-button.telegram {
+            background: linear-gradient(45deg, #0088cc, #00a2ff);
+            color: white;
+        }
+
+        .contact-button.email {
+            background: linear-gradient(45deg, #ff4f4f, #ff9f4f);
+            color: white;
+        }
+
+        .contact-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 255, 255, 0.4);
+        }
+
+        .contact-button i {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+
+        /* Add new styles for showcase section */
+        .showcase-section {
+            text-align: center;
+            margin: 3rem auto;
+            max-width: 1200px;
+            padding: 2rem;
+        }
+
+        .showcase-title {
+            color: #4ff;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .showcase-subtitle {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .video-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .video-container:hover {
+            transform: translateY(-10px);
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+
+        .video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .step-card {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .step-number {
+            color: #4ff;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .try-now-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #4ff, #4f9);
+            color: #1a1a2e;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            text-decoration: none;
+            margin: 2rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .try-now-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(79, 255, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .video-grid, .steps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
+
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="header">
         <img src="https://cdn.kakifilem.com/kakifilem.png" alt="KakiFilem Logo" class="logo">
         <h1>KakiFilem</h1>
+    </div>
+
+    <!-- Add showcase section before about section -->
+    <div class="showcase-section">
+        <h1 class="showcase-title">Lightning-Fast Search</h1>
+        <p class="showcase-subtitle">Works anywhere in Telegram with inline mode.<br>Try @KakifilemBot</p>
+
+        <h2>🎬 How It Works in 15 Seconds</h2>
+        
+        <div class="video-grid">
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <video autoplay loop muted playsinline>
+                        <source src="https://cdn.kakifilem.com/videos/step1.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <video autoplay loop muted playsinline>
+                        <source src="https://cdn.kakifilem.com/videos/step2.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <video autoplay loop muted playsinline>
+                        <source src="https://cdn.kakifilem.com/videos/step3.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+        </div>
+
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Start the Bot</h3>
+                <p>Open @KakifilemBot and enter any title</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Pick Your File</h3>
+                <p>Browse results indexed files</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Get File & Enjoy</h3>
+                <p>Get files directly in Telegram</p>
+            </div>
+        </div>
+
+        <h2>Ready to Find Movies Instantly?</h2>
+        <a href="https://t.me/kakifilemadminbot" class="try-now-button">
+            🔍 Try Free Now →
+        </a>
     </div>
 
     <div class="container">
@@ -142,6 +347,23 @@
                 <h3>Can I request new features?</h3>
                 <p><span>💡</span>Absolutely! We welcome your ideas. Simply join our <a href="https://t.me/kakifilemreport1" style="color: #4ff;">feedback channel</a> and share your suggestions.</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Add contact section before footer -->
+    <div class="contact-section">
+        <h2>Get in Touch</h2>
+        <p>If you have any questions or just want to say hello, please don't hesitate to contact us. We'll get back to you soon.</p>
+        
+        <div class="contact-buttons">
+            <a href="mailto:contact@kakifilem.com" class="contact-button email">
+                <i class="fas fa-envelope"></i>
+                Email Us
+            </a>
+            <a href="https://t.me/kakifilemreport1" target="_blank" class="contact-button telegram">
+                <i class="fab fa-telegram"></i>
+                Telegram
+            </a>
         </div>
     </div>
 
