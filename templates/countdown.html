@@ -159,9 +159,10 @@
             box-shadow: 0 0 10px rgba(79, 255, 255, 0.5);
         }
         .home-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+            position: static;
+            margin: 20px auto;
+            display: block;
+            width: fit-content;
             background: linear-gradient(45deg, #4ff, #4f9);
             color: #1a1a2e;
             padding: 10px 20px;
@@ -169,9 +170,7 @@
             text-decoration: none;
             font-weight: bold;
             transition: all 0.3s ease;
-            z-index: 1000;
         }
-
         .home-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(79, 255, 255, 0.4);

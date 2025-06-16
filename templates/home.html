@@ -27,6 +27,19 @@
         .logo {
             max-width: 150px;
             border-radius: 50%;
+            box-shadow: 0 0 30px rgba(79, 255, 255, 0.3);
+            transition: transform 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
         .container {
             max-width: 1200px;
@@ -271,7 +284,7 @@
     <div class="nav-links">
         <a href="https://t.me/KakifilemBot" target="_blank">Try Bot</a>
         <a href="#about">About Us</a>
-        <a href="/contact/" target="_blank">Contact</a>
+        <a href="/contact.html" target="_blank">Contact</a>
     </div>
 
     <!-- Add showcase section before about section -->
@@ -349,6 +362,17 @@
             <p><span class="check-mark">✅</span>Committed to legal and ethical standards</p>
             <p><span class="check-mark">✅</span>Fast, user-friendly platform — like a torrent search engine for streaming and file-sharing links</p>
             <p><span class="check-mark">✅</span>Secure access to trusted third-party platforms</p>
+
+            <h2>❓ Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <h3>Is this bot safe to use?</h3>
+                <p><span class="check-mark">✅</span>Yes — we only index files that are publicly available on Telegram. We do not collect or store any personal data from users. <a href="https://kakifilem.com/privacy" style="color: #4ff;">Read Our Privacy Policy</a></p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Can I request new features?</h3>
+                <p><span>💡</span>Absolutely! We welcome your ideas. Simply join our <a href="https://t.me/kakifilemreport1" style="color: #4ff;">feedback channel</a> and share your suggestions.</p>
+            </div>
         </div>
     </div>
 
