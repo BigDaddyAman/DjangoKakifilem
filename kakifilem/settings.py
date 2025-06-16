@@ -33,9 +33,8 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 # Update ALLOWED_HOSTS to be more permissive
 ALLOWED_HOSTS = [
     'www.kakifilem.com',
-    'web-production-a47d1.up.railway.app',
     'bot.kakifilem.com',
-    'kakifilem.com',
+    'web-production-a47d1.up.railway.app',
     'localhost',
     '127.0.0.1',
 ]
@@ -168,8 +167,8 @@ USE_X_FORWARDED_PORT = True
 CORS_ALLOWED_ORIGINS = [
     "https://www.kakifilem.com",
     "https://bot.kakifilem.com",
-    "https://kakifilem.com",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'GET',
@@ -189,7 +188,6 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     'https://www.kakifilem.com',
     'https://bot.kakifilem.com',
-    'https://kakifilem.com',
 ]
 
 LOGGING = {

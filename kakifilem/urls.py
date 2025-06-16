@@ -21,9 +21,13 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),  # Add this line for www.kakifilem.com
-    path('download/', views.index, name='index'),  # Changed from root to /download/
-    path('download/countdown/', views.countdown, name='countdown'),  # Changed path
+    # Main site URLs (www.kakifilem.com)
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+
+    # Bot site URLs (bot.kakifilem.com)
+    path('index.html', views.index, name='index'),  # Keep original path for bot domain
+    path('countdown/', views.countdown, name='countdown'),
+
     # Static asset paths
     path('InPagePush.js', TemplateView.as_view(
         template_name='InPagePush.js',

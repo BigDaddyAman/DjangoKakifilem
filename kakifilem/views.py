@@ -46,9 +46,16 @@ def get_user_by_token(token):
             conn.close()
 
 def index(request):
+    # Check if request is from bot domain
+    if request.get_host() != 'bot.kakifilem.com':
+        return redirect('https://bot.kakifilem.com/index.html')
     return render(request, 'index.html')
 
 def countdown(request):
+    # Check if request is from bot domain
+    if request.get_host() != 'bot.kakifilem.com':
+        return redirect('https://bot.kakifilem.com/countdown/')
+    
     token = request.GET.get('token')
     video_name = request.GET.get('videoName')
     
