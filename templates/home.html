@@ -16,6 +16,8 @@
             color: #fff;
             margin: 0;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .header {
             background: rgba(0,0,0,0.5);
@@ -30,6 +32,7 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+            flex: 1;
         }
         .about-section {
             max-width: 800px;
@@ -238,36 +241,38 @@
             text-align: center;
             color: #4ff;
         }
-    </style>
+
         /* Add styles for footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            margin-top: auto;
+            position: relative;
+            bottom: 0;
+        }
+
+        footer p {
+            color: #4ff;
+            margin: 0;
+            text-align: center;
+        }
+    </style>
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>     padding: 2rem;
-<body>      width: 100%;
-    <div class="header">rgba(0,0,0,0.3);
+</head>
+<body>
+    <div class="header">
         <img src="https://cdn.kakifilem.com/kakifilem.png" alt="KakiFilem Logo" class="logo">
         <h1>KakiFilem</h1>
     </div>
-        footer p {
+
     <!-- Update navigation links -->
     <div class="nav-links">
         <a href="https://t.me/KakifilemBot" target="_blank">Try Bot</a>
         <a href="#about">About Us</a>
-        <a href="/contact/" target="_blank">Contact</a>  <!-- Update with correct path -->
-    </div>dd Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Add showcase section before about section -->
-    <div class="showcase-section">
-        <h1 class="showcase-title">Lightning-Fast Search</h1>
-        <p class="showcase-subtitle">Works anywhere in Telegram with inline mode.<br>Try <a href="https://t.me/KakifilemBot" style="color: #4ff; text-decoration: none;">@KakifilemBot</a></p>
-        <h1>KakiFilem</h1>
-        <h2>🎬 How It Works in 15 Seconds</h2>
-        
-    <!-- Update navigation links -->
-    <div class="nav-links">
-        <a href="https://t.me/KakifilemBot" target="_blank">Try Bot</a>
-        <a href="#about">About Us</a>
-        <a href="https://www.kakifilem.com/contact" target="_blank">Contact</a>
+        <a href="/contact/" target="_blank">Contact</a>
     </div>
 
     <!-- Add showcase section before about section -->
@@ -327,7 +332,7 @@
     </div>
 
     <div class="container">
-        <div class="about-section" id="about"></div>
+        <div class="about-section" id="about">
             <h2>Legal Disclaimer</h2>
             <p>Kakifilem operates within legal boundaries and does not take responsibility for the content, copyright compliance, or quality of media hosted on external platforms.</p>
             <p>Users are encouraged to ensure the legality of any third-party content they choose to access. For copyright concerns, please contact the respective file hosts or website owners directly.</p>
