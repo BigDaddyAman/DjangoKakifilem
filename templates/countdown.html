@@ -158,6 +158,24 @@
             transition: width 1s linear;
             box-shadow: 0 0 10px rgba(79, 255, 255, 0.5);
         }
+        .home-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #4ff, #4f9);
+            color: #1a1a2e;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .home-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 255, 255, 0.4);
+        }
     </style>
     <script src="{% static 'js/InPagePush.js' %}" async></script>
     <script src="{% static 'js/sw.js' %}" async></script>
@@ -165,6 +183,7 @@
     <script>(function(s,u,z,p){s.src=u,s.setAttribute('data-zone',z),p.appendChild(s);})(document.createElement('script'),'https://shebudriftaiter.net/tag.min.js',8983926,document.body||document.documentElement)</script>
 </head>
 <body>
+    <a href="https://www.kakifilem.com" target="_blank" class="home-button">🏠 Home</a>
     <script>(function(d,z,s){s.src='https://'+d+'/400/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('vemtoutcheeg.com',9285036,document.createElement('script'))</script>
     
     <div class="container">

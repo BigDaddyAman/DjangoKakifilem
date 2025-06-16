@@ -23,7 +23,11 @@ from . import views
 urlpatterns = [
     # Main site URLs (www.kakifilem.com)
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
-    path('contact', TemplateView.as_view(template_name='contact.html'), name='contact'),  # Remove trailing slash
+    
+    # Fix contact URL - add both versions
+    path('contact', TemplateView.as_view(template_name='contact.html'), name='contact-no-slash'),
+    path('contact/', TemplateView.as_view(template_name='contact.html'), name='contact'),
+    path('contact.html', TemplateView.as_view(template_name='contact.html'), name='contact-html'),
 
     # Bot site URLs (bot.kakifilem.com)
     path('index.html', views.index, name='index'),  # Keep original path for bot domain
