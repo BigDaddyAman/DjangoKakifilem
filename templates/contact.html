@@ -123,9 +123,40 @@
                 gap: 1rem;
             }
         }
+
+        .nav-links {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .nav-button.home {
+            background: linear-gradient(45deg, #4ff, #4f9);
+            color: #1a1a2e;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-button.home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 255, 255, 0.4);
+        }
     </style>
 </head>
 <body>
+    <div class="nav-links">
+        <a href="/" class="nav-button home">
+            <i class="fas fa-home"></i>
+            Back to Home
+        </a>
+    </div>
+
     <div class="header">
         <div class="logo-container">
             <img src="https://cdn.kakifilem.com/kakifilem.png" alt="KakiFilem Logo" class="logo">
