@@ -235,23 +235,44 @@
         @media (max-width: 768px) {
             .video-grid {
                 grid-template-columns: 1fr;
-                max-width: 90%;
-                margin: 1rem auto;
-                gap: 3rem;
+                max-width: 100%;
+                margin: 0;
+                gap: 2rem;
+                padding: 1rem;
             }
 
             .video-wrapper {
-                max-width: 300px;
-                margin: 0 auto;
+                max-width: 100%;
+                margin: 0;
             }
 
             .step-info {
-                max-width: 300px;
-                margin: 0 auto;
+                max-width: 100%;
+                margin: 0;
+                padding: 1rem;
             }
 
-            .steps-grid {
-                display: none; /* Hide the original steps grid on mobile */
+            .container {
+                padding: 1rem;
+            }
+
+            .showcase-section {
+                padding: 1rem;
+                margin: 1rem 0;
+            }
+
+            .about-section {
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            body {
+                overflow-x: hidden;
+            }
+
+            .try-now-button {
+                width: 90%;
+                max-width: 300px;
             }
         }
 
