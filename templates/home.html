@@ -2,7 +2,7 @@
 {% load static %}
 <html>
 <head>
-    <title>KakiFilem - Watch Movies Online</title>
+    <title>KakiFilem - About Us</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon/favicon-32x32.png' %}">
@@ -31,59 +31,64 @@
             margin: 0 auto;
             padding: 2rem;
         }
-        .search-box {
-            background: rgba(255,255,255,0.1);
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 2rem 0;
-            display: flex;
-            justify-content: center;
-        }
-        .search-input {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            width: 300px;
-            max-width: 100%;
-            background: rgba(255,255,255,0.9);
-        }
-        .movie-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 2rem;
-            padding: 2rem 0;
-        }
-        .movie-card {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-        .movie-card:hover {
-            transform: translateY(-5px);
-        }
-        .movie-poster {
-            width: 100%;
-            aspect-ratio: 2/3;
-            object-fit: cover;
-        }
-        .movie-info {
-            padding: 1rem;
-        }
-        .movie-title {
-            margin: 0;
-            font-size: 1.1rem;
-            color: #4ff;
-        }
-        .movie-year {
-            color: #aaa;
-            font-size: 0.9rem;
-        }
-        footer {
-            text-align: center;
+        .about-section {
+            max-width: 800px;
+            margin: 0 auto;
             padding: 2rem;
-            background: rgba(0,0,0,0.5);
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
             margin-top: 2rem;
+        }
+        
+        .about-section h2 {
+            color: #4ff;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .about-section p {
+            margin-bottom: 1.2rem;
+            line-height: 1.6;
+        }
+        
+        .platform-list {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .platform-category {
+            color: #4ff;
+            margin-top: 1rem;
+        }
+        
+        .faq-item {
+            margin-bottom: 1.5rem;
+        }
+        
+        .faq-item h3 {
+            color: #4ff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .check-mark {
+            color: #4ff;
+            margin-right: 0.5rem;
+        }
+
+        .disclaimer-box {
+            border: 1px solid rgba(79, 255, 255, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            background: rgba(79, 255, 255, 0.05);
+        }
+
+        .contact-info {
+            text-align: center;
+            margin-top: 2rem;
+            color: #4ff;
         }
     </style>
 </head>
@@ -94,21 +99,54 @@
     </div>
 
     <div class="container">
-        <div class="search-box">
-            <input type="text" class="search-input" placeholder="Search movies...">
-        </div>
+        <div class="about-section">
+            <h2>How Kakifilem Works</h2>
+            <div class="disclaimer-box">
+                <p>Kakifilem does not host, store, or distribute videos, movies, or files on our servers. Instead, we serve as an aggregator, providing links to third-party websites and applications, including:</p>
+                
+                <div class="platform-category">Streaming Platforms:</div>
+                <p>TikTok, YouTube, Dailymotion, VK, Uptobox</p>
+                
+                <div class="platform-category">File Hosting Services:</div>
+                <p>Mediafire, Google Drive, Openload, Picasaweb</p>
+                
+                <div class="platform-category">Communication Apps:</div>
+                <p>Telegram</p>
+            </div>
 
-        <div class="movie-grid">
-            <!-- Movie cards will be dynamically added here -->
+            <h2>Legal Disclaimer</h2>
+            <p>Kakifilem operates within legal boundaries and does not take responsibility for the content, copyright compliance, or quality of media hosted on external platforms.</p>
+            <p>Users are encouraged to ensure the legality of any third-party content they choose to access. For copyright concerns, please contact the respective file hosts or website owners directly.</p>
+
+            <h2>Copyright Compliance</h2>
+            <p>Kakifilem respects intellectual property rights and is committed to addressing copyright violations.</p>
+            <p>If you are a copyright owner and believe that a link on our platform infringes your rights:</p>
+            <ul>
+                <li>Send a formal notice to contact@kakifilem.com</li>
+                <li>Include clear details such as the URL(s) in question and proof of ownership</li>
+            </ul>
+            <p>We will review your request promptly and take appropriate action, including removing infringing links if necessary.</p>
+
+            <h2>Why Choose Kakifilem?</h2>
+            <p><span class="check-mark">✅</span>Committed to legal and ethical standards</p>
+            <p><span class="check-mark">✅</span>Fast, user-friendly platform — like a torrent search engine for streaming and file-sharing links</p>
+            <p><span class="check-mark">✅</span>Secure access to trusted third-party platforms</p>
+
+            <h2>❓ Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <h3>Is this bot safe to use?</h3>
+                <p><span class="check-mark">✅</span>Yes — we only index files that are publicly available on Telegram. We do not collect or store any personal data from users. <a href="https://kakifilem.com/privacy" style="color: #4ff;">Read Our Privacy Policy</a></p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Can I request new features?</h3>
+                <p><span>💡</span>Absolutely! We welcome your ideas. Simply join our <a href="https://t.me/kakifilemreport1" style="color: #4ff;">feedback channel</a> and share your suggestions.</p>
+            </div>
         </div>
     </div>
 
     <footer>
         <p>© KakiFilem 2025 - Your Ultimate Movie Destination</p>
     </footer>
-
-    <script>
-        // Add your JavaScript for dynamic content here
-    </script>
 </body>
 </html>
