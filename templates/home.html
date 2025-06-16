@@ -165,9 +165,10 @@
 
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(200px, 300px));
             gap: 2rem;
-            margin: 2rem 0;
+            margin: 2rem auto;
+            justify-content: center;
         }
 
         .video-container {
@@ -183,16 +184,32 @@
 
         .video-wrapper {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            padding-bottom: 177.78%; /* 9:16 aspect ratio for vertical phone videos */
+            background: rgba(0,0,0,0.1);
+            border-radius: 15px;
+            overflow: hidden;
         }
 
-        .video-wrapper video {
+        .video-wrapper::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+
+        .video-wrapper img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 15px;
         }
 
         .steps-grid {
@@ -233,9 +250,45 @@
         }
 
         @media (max-width: 768px) {
-            .video-grid, .steps-grid {
+            .video-grid {
+                grid-template-columns: minmax(200px, 300px);
+            }
+            .steps-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* Add new styles for navigation */
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            margin-bottom: 2rem;
+        }
+
+        .nav-links a {
+            color: #4ff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(79, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Add style for copyright in about section */
+        .copyright-divider {
+            border-top: 1px solid rgba(79, 255, 255, 0.2);
+            margin: 2rem 0;
+            padding-top: 1rem;
+            text-align: center;
+            color: #4ff;
         }
     </style>
 
@@ -248,33 +301,41 @@
         <h1>KakiFilem</h1>
     </div>
 
+    <!-- Add navigation links -->
+    <div class="nav-links">
+        <a href="https://t.me/KakifilemBot" target="_blank">Try Bot</a>
+        <a href="#about">About Us</a>
+        <a href="#contact">Contact</a>
+    </div>
+
     <!-- Add showcase section before about section -->
     <div class="showcase-section">
         <h1 class="showcase-title">Lightning-Fast Search</h1>
-        <p class="showcase-subtitle">Works anywhere in Telegram with inline mode.<br>Try @KakifilemBot</p>
+        <p class="showcase-subtitle">Works anywhere in Telegram with inline mode.<br>Try <a href="https://t.me/KakifilemBot" style="color: #4ff; text-decoration: none;">@KakifilemBot</a></p>
 
         <h2>🎬 How It Works in 15 Seconds</h2>
         
         <div class="video-grid">
             <div class="video-container">
                 <div class="video-wrapper">
-                    <video autoplay loop muted playsinline>
-                        <source src="https://cdn.kakifilem.com/videos/step1.mp4" type="video/mp4">
-                    </video>
+                    <!-- Add loading="lazy" for performance -->
+                    <img src="https://cdn.kakifilem.com/start-bot.gif" 
+                         alt="Start the Bot"
+                         loading="lazy">
                 </div>
             </div>
             <div class="video-container">
                 <div class="video-wrapper">
-                    <video autoplay loop muted playsinline>
-                        <source src="https://cdn.kakifilem.com/videos/step2.mp4" type="video/mp4">
-                    </video>
+                    <img src="https://cdn.kakifilem.com/search-files.gif" 
+                         alt="Search Files"
+                         loading="lazy">
                 </div>
             </div>
             <div class="video-container">
                 <div class="video-wrapper">
-                    <video autoplay loop muted playsinline>
-                        <source src="https://cdn.kakifilem.com/videos/step3.mp4" type="video/mp4">
-                    </video>
+                    <img src="https://cdn.kakifilem.com/get-file.gif" 
+                         alt="Get File"
+                         loading="lazy">
                 </div>
             </div>
         </div>
@@ -298,13 +359,13 @@
         </div>
 
         <h2>Ready to Find Movies Instantly?</h2>
-        <a href="https://t.me/kakifilemadminbot" class="try-now-button">
+        <a href="https://t.me/KakifilemBot" class="try-now-button">
             🔍 Try Free Now →
         </a>
     </div>
 
     <div class="container">
-        <div class="about-section">
+        <div class="about-section" id="about">
             <h2>How Kakifilem Works</h2>
             <div class="disclaimer-box">
                 <p>Kakifilem does not host, store, or distribute videos, movies, or files on our servers. Instead, we serve as an aggregator, providing links to third-party websites and applications, including:</p>
@@ -337,6 +398,11 @@
             <p><span class="check-mark">✅</span>Fast, user-friendly platform — like a torrent search engine for streaming and file-sharing links</p>
             <p><span class="check-mark">✅</span>Secure access to trusted third-party platforms</p>
 
+            <!-- Add copyright before FAQ -->
+            <div class="copyright-divider">
+                © KakiFilem 2025 - Your Ultimate Movie Destination
+            </div>
+
             <h2>❓ Frequently Asked Questions</h2>
             <div class="faq-item">
                 <h3>Is this bot safe to use?</h3>
@@ -350,8 +416,8 @@
         </div>
     </div>
 
-    <!-- Add contact section before footer -->
-    <div class="contact-section">
+    <!-- Update contact section with ID -->
+    <div class="contact-section" id="contact">
         <h2>Get in Touch</h2>
         <p>If you have any questions or just want to say hello, please don't hesitate to contact us. We'll get back to you soon.</p>
         
@@ -370,5 +436,17 @@
     <footer>
         <p>© KakiFilem 2025 - Your Ultimate Movie Destination</p>
     </footer>
+
+    <!-- Add smooth scroll behavior -->
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
 </body>
 </html>
