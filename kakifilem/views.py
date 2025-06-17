@@ -269,3 +269,16 @@ def search_videos(request):
 def search_page(request):
     """Render search page"""
     return render(request, 'search.html')
+
+@csrf_exempt
+def auth_callback(request):
+    """Handle Telegram auth callback"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            logger.info(f"Auth callback received: {data}")
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            logger.error(f"Auth callback error: {e}")
+            return JsonResponse({'status': 'error'}, status=400)
+    return redirect('/search/')

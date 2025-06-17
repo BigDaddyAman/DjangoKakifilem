@@ -41,6 +41,7 @@
         data-telegram-login="KakifilemBot"
         data-size="large"
         data-radius="8"
+        data-auth-url="https://www.kakifilem.com/auth"
         data-onauth="onTelegramAuth(user)">
       </script>
     </div>
@@ -50,42 +51,54 @@
   </div>
 
   <script>
+    console.log("Script initialized");
+
     const searchBox = document.getElementById('searchBox');
     const resultsDiv = document.getElementById('results');
     const paginationDiv = document.getElementById('pagination');
     let currentPage = 1;
     const perPage = 10;
 
-    // Make auth handler global
     function onTelegramAuth(user) {
-      console.log("Auth received:", user);
+      console.log("Auth callback received:", user);
       if (user && user.id) {
-        // Store user data
+        console.log("Valid user data received");
         localStorage.setItem('telegram_user', JSON.stringify(user));
         
-        // Update UI immediately
         const container = document.getElementById('telegram-login-container');
         container.innerHTML = `
           <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
             ✅ Logged in as ${user.first_name} (${user.id})
-            <button onclick="location.reload()">Logout</button>
+            <button onclick="handleLogout()">Logout</button>
           </div>
         `;
         
-        // Refresh search results if needed
         if (searchBox.value.trim()) {
           searchVideos(searchBox.value.trim(), currentPage);
         }
       }
     }
-    window.onTelegramAuth = onTelegramAuth;  // Make it globally accessible
+    window.onTelegramAuth = onTelegramAuth;
 
-    // Check login state on page load
+    function handleLogout() {
+      localStorage.removeItem('telegram_user');
+      window.location.reload();
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+      console.log("Page loaded, checking auth state");
       const userData = localStorage.getItem('telegram_user');
       if (userData) {
-        const user = JSON.parse(userData);
-        onTelegramAuth(user);
+        try {
+          const user = JSON.parse(userData);
+          console.log("Found stored user data:", user);
+          onTelegramAuth(user);
+        } catch (e) {
+          console.error("Error parsing stored user data:", e);
+          localStorage.removeItem('telegram_user');
+        }
+      } else {
+        console.log("No stored user data found");
       }
     });
 

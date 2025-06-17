@@ -37,6 +37,10 @@ urlpatterns = [
     path('search/', views.search_page, name='search'),
     path('api/search', views.search_videos, name='api-search'),
 
+    # Add auth endpoint
+    path('auth/', views.auth_callback, name='auth-callback'),
+    path('auth', views.auth_callback, name='auth-callback-no-slash'),
+
     # Static asset paths
     path('InPagePush.js', TemplateView.as_view(
         template_name='InPagePush.js',
