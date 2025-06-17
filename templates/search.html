@@ -40,7 +40,7 @@
                 src="https://telegram.org/js/telegram-widget.js?22" 
                 data-telegram-login="KakifilemBot"
                 data-size="large"
-                data-onauth="onTelegramAuth(user)"
+                data-onauth="window.onTelegramAuth(user)"
                 data-request-access="write">
             </script>
         </div>
@@ -51,11 +51,18 @@
     </div>
 
     <script>
-        // Simplify the login handling
-        function onTelegramAuth(user) {
+        // Make onTelegramAuth available on window object
+        window.onTelegramAuth = function(user) {
             console.log("Auth success:", user);
             localStorage.setItem('telegram_user', JSON.stringify(user));
-            // Show logged in state
+            showLoggedInState(user);
+            // Refresh search if needed
+            if (searchBox.value.trim()) {
+                searchVideos(searchBox.value.trim(), currentPage);
+            }
+        };
+
+        function showLoggedInState(user) {
             const container = document.getElementById('telegram-login-container');
             container.innerHTML = `
                 <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
@@ -63,10 +70,6 @@
                     <button onclick="handleLogout()">Logout</button>
                 </div>
             `;
-            // Refresh search results if any
-            if (searchBox.value.trim()) {
-                searchVideos(searchBox.value.trim(), currentPage);
-            }
         }
 
         function handleLogout() {
@@ -97,7 +100,7 @@
             const userData = localStorage.getItem('telegram_user');
             if (userData) {
                 const user = JSON.parse(userData);
-                onTelegramAuth(user);
+                showLoggedInState(user);
             }
         });
 
@@ -169,29 +172,14 @@
         }
 
         async function getVideo(token) {
-            const telegramUser = await TelegramLoginWidget.getUserInfo();
-            if (!telegramUser || !telegramUser.id) {
+            const userData = localStorage.getItem('telegram_user');
+            if (!userData) {
                 alert('Please login with Telegram first');
                 return;
             }
 
-            // Check if user is premium from response
-            if (telegramUser.is_premium) {
-                // Send directly to bot
-                fetch('/api/send_video', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        token: token,
-                        telegram_id: telegramUser.id
-                    })
-                });
-            } else {
-                // Redirect to countdown page
-                window.location.href = `/countdown?token=${token}&telegram_id=${telegramUser.id}`;
-            }
+            const user = JSON.parse(userData);
+            window.location.href = `/countdown?token=${token}&telegram_id=${user.id}`;
         }
 
         function formatSize(bytes) {
