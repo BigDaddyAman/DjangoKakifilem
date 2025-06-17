@@ -31,43 +31,53 @@
     }
   </style>
   <script>
-    // Define auth handler globally first
+    // Debug version of auth handler
     function onTelegramAuth(user) {
-        console.log('[AUTH CALLBACK FIRED]', user);
+        console.log('[AUTH START]', new Date().toISOString());
+        console.log('[AUTH DATA]', user);
         
         if (!user || !user.id) {
-            console.error('Invalid auth data');
+            console.error('[AUTH ERROR] Invalid user data');
             return;
         }
 
         try {
-            // Store auth data
-            localStorage.setItem('telegram_user', JSON.stringify({
+            // Log before storage
+            console.log('[AUTH] Storing user data...');
+            
+            const authData = {
                 ...user,
                 timestamp: Date.now()
-            }));
-
-            // Force page reload to update UI
-            location.reload();
+            };
+            localStorage.setItem('telegram_user', JSON.stringify(authData));
+            
+            console.log('[AUTH] Data stored, reloading page...');
+            window.location.reload();
         } catch (e) {
-            console.error('Auth error:', e);
+            console.error('[AUTH ERROR]', e);
+            alert('Login failed: ' + e.message);
         }
     }
-    // Make it explicitly global
+
+    // Make it globally available
     window.onTelegramAuth = onTelegramAuth;
+    console.log('[INIT] Auth handler registered:', !!window.onTelegramAuth);
   </script>
 </head>
 <body>
   <div class="search-container">
-    <!-- Simplified login container -->
+    <!-- Update Telegram widget -->
     <div id="telegram-login-container">
+      <div id="login-status"></div>
       <script 
         async 
         src="https://telegram.org/js/telegram-widget.js?22" 
         data-telegram-login="Kakifilembot"
         data-size="large"
         data-radius="8"
-        data-onauth="onTelegramAuth">
+        data-request-access="write"
+        data-auth-url="https://www.kakifilem.com/auth"
+        data-onauth="window.onTelegramAuth">
       </script>
     </div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
@@ -84,15 +94,23 @@
 
     debug.log('Page initialized');
 
-    // Check stored auth on load
+    // Add status display
+    function updateStatus(msg, isError = false) {
+        const status = document.getElementById('login-status');
+        if (status) {
+            status.innerHTML = `<div style="color: ${isError ? 'red' : 'blue'}; margin: 10px 0;">${msg}</div>`;
+        }
+    }
+
+    // Check auth state with logging
     document.addEventListener('DOMContentLoaded', () => {
-        debug.log('Checking auth state');
-        const stored = localStorage.getItem('telegram_user');
+        console.log('[INIT] Page loaded, checking auth...');
         
-        if (stored) {
-            try {
+        try {
+            const stored = localStorage.getItem('telegram_user');
+            if (stored) {
                 const data = JSON.parse(stored);
-                debug.log('Found stored auth:', data);
+                console.log('[AUTH] Found stored data:', data);
                 
                 // Update UI for logged in state
                 const container = document.getElementById('telegram-login-container');
@@ -103,12 +121,14 @@
                         <button onclick="handleLogout()">Logout</button>
                     </div>
                 `;
-            } catch (e) {
-                debug.error('Error loading stored auth:', e);
-                localStorage.removeItem('telegram_user');
+                updateStatus('Logged in successfully');
+            } else {
+                console.log('[AUTH] No stored data found');
+                updateStatus('Please log in with Telegram');
             }
-        } else {
-            debug.log('No stored auth found');
+        } catch (e) {
+            console.error('[ERROR] Auth check failed:', e);
+            updateStatus('Error checking login state', true);
         }
     });
 
