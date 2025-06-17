@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KakiFilem Search</title>
-  <script async src="https://telegram.org/js/telegram-widget.js"></script>
   <style>
     .search-container {
       max-width: 800px;
@@ -34,15 +33,15 @@
 </head>
 <body>
   <div class="search-container">
-    <!-- Replace Telegram login container with official widget -->
+    <!-- Fix Telegram login widget -->
     <div id="telegram-login-container">
       <script 
         async 
         src="https://telegram.org/js/telegram-widget.js?22" 
         data-telegram-login="Kakifilembot"
         data-size="large"
-        data-onauth="onTelegramAuth(user)"
-        data-request-access="write">
+        data-radius="8"
+        data-onauth="onTelegramAuth">
       </script>
     </div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
@@ -58,40 +57,47 @@
 
     debug.log('Initializing...');
 
-    // Simple global auth handler
+    // Define auth handler BEFORE widget loads
     function onTelegramAuth(user) {
-        debug.log('Auth received:', user);
+        console.log('Auth callback received:', user);
         
         if (!user || !user.id) {
-            return alert('Login failed');
+            console.error('Invalid login data');
+            return;
         }
 
-        // Store complete user data
-        localStorage.setItem('telegram_user', JSON.stringify({
-            id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            username: user.username,
-            photo_url: user.photo_url,
-            auth_date: user.auth_date
-        }));
+        try {
+            // Store complete user data
+            localStorage.setItem('telegram_user', JSON.stringify({
+                id: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                username: user.username,
+                photo_url: user.photo_url,
+                auth_date: user.auth_date,
+                timestamp: new Date().getTime()
+            }));
+            console.log('Stored user data:', user.id);
 
-        // Update UI
-        document.getElementById('telegram-login-container').innerHTML = `
-            <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
-                ✅ Logged in as ${user.first_name} ${user.last_name || ''} 
-                ${user.username ? `(@${user.username})` : ''} (ID: ${user.id})
-                <button onclick="handleLogout()">Logout</button>
-            </div>
-        `;
+            // Update UI immediately
+            document.getElementById('telegram-login-container').innerHTML = `
+                <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+                    ✅ Logged in as ${user.first_name} ${user.last_name || ''} 
+                    ${user.username ? `(@${user.username})` : ''}
+                    <button onclick="handleLogout()">Logout</button>
+                </div>
+            `;
 
-        // Refresh search if needed
-        if (searchBox.value.trim()) {
-            searchVideos(searchBox.value.trim(), currentPage);
+            // Refresh search if needed
+            if (searchBox.value.trim()) {
+                searchVideos(searchBox.value.trim(), currentPage);
+            }
+        } catch (e) {
+            console.error('Error saving auth:', e);
         }
     }
 
-    // Make auth handler global
+    // Make sure it's globally accessible
     window.onTelegramAuth = onTelegramAuth;
 
     function handleLogout() {
