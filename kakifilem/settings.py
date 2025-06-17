@@ -32,11 +32,9 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Update ALLOWED_HOSTS to include all domains
 ALLOWED_HOSTS = [
-    'www.kakifilem.com',
-    'bot.kakifilem.com',
-    'kakifilem.com',
-    'web-production-a47d1.up.railway.app',
-    'kakifilembot-production.up.railway.app',
+    'www.kakifilem.com',  # Primary domain
+    'kakifilem.com',      # Base domain
+    'bot.kakifilem.com',  # Bot subdomain
     'localhost',
     '127.0.0.1',
 ]
@@ -169,11 +167,8 @@ USE_X_FORWARDED_PORT = True
 # Update CORS settings
 CORS_ALLOWED_ORIGINS = [
     'https://www.kakifilem.com',
-    'https://bot.kakifilem.com', 
     'https://kakifilem.com',
-    'https://web-production-a47d1.up.railway.app',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
+    'https://bot.kakifilem.com',
 ]
 
 # Allow all domains in development
@@ -197,9 +192,8 @@ CORS_ALLOW_HEADERS = [
 # Update trusted origins
 CSRF_TRUSTED_ORIGINS = [
     'https://www.kakifilem.com',
-    'https://bot.kakifilem.com',
     'https://kakifilem.com',
-    'https://web-production-a47d1.up.railway.app',
+    'https://bot.kakifilem.com',
 ]
 
 # Disable CSRF in development

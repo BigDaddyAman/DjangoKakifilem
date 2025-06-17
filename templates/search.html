@@ -33,27 +33,39 @@
 </head>
 <body>
   <div class="search-container">
-    <!-- Fixed login widget -->
+    <!-- Telegram login container -->
     <div id="telegram-login-container">
       <script>
-        function onTelegramAuth(user) {
-          console.log('Auth received:', user);
-          if (user && user.id) {
-            localStorage.setItem('telegram_user', JSON.stringify({
-              ...user,
-              timestamp: Date.now()
-            }));
-            location.reload();
+        // IMPORTANT: Define as a global function
+        window.onTelegramAuth = function(user) {
+          console.log('[TELEGRAM AUTH]', user);
+          
+          if (!user || !user.id) {
+            console.error('Invalid auth data');
+            return;
           }
+
+          // Store user data
+          localStorage.setItem('telegram_user', JSON.stringify({
+            ...user,
+            timestamp: Date.now()
+          }));
+
+          // Show success alert
+          alert(`Welcome ${user.first_name}! You are now logged in.`);
+          
+          // Force page reload
+          window.location.reload();
         }
       </script>
-      
+
+      <!-- Telegram widget - Simplified -->
       <script 
         async 
         src="https://telegram.org/js/telegram-widget.js?22" 
         data-telegram-login="Kakifilembot"
         data-size="large"
-        data-onauth="onTelegramAuth(user)">
+        data-onauth="onTelegramAuth">
       </script>
     </div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
