@@ -41,7 +41,7 @@
                 data-telegram-login="KakifilemBot" 
                 data-size="large"
                 data-radius="8"
-                data-onauth="window.onTelegramAuth(user)"
+                data-onauth="onTelegramAuth"
                 data-request-access="write">
             </script>
         </div>
@@ -63,7 +63,8 @@
             container.innerHTML = `
                 <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
                     ✅ Logged in as ${user.first_name}
-                    <button onclick="location.reload()">Logout</button>
+                    <button onclick="localStorage.removeItem('telegram_user'); location.reload()">Logout</button>
+
                 </div>
             `;
 
