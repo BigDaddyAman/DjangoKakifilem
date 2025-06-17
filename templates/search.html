@@ -33,64 +33,75 @@
 </head>
 <body>
   <div class="search-container">
-    <!-- Updated login container -->
+    <!-- Simpler login container -->
     <div id="telegram-login-container">
-      <div id="login-status"></div>
+      <div id="debug-info"></div>
       <script>
-        // Global auth handler
-        window.onTelegramAuth = function(user) {
-          console.log('[AUTH] Received:', user);
-          if (user && user.id) {
-            // Store auth with browser session ID
-            const authData = {
-              id: user.id,
-              first_name: user.first_name,
-              username: user.username,
-              session: Date.now(),
-              auth_date: user.auth_date
-            };
-            
-            localStorage.setItem('telegram_user', JSON.stringify(authData));
-            console.log('[AUTH] Stored:', authData);
-            
-            showLoggedInState(authData);
-            return;
-          }
-          console.error('[AUTH] Invalid user data');
+        // Debug logger
+        function log(msg) {
+          console.log('[DEBUG]', msg);
+          const debug = document.getElementById('debug-info');
+          if (debug) debug.innerHTML += `<div>${msg}</div>`;
         }
 
-        // Show logged in UI
-        function showLoggedInState(user) {
-          const container = document.getElementById('telegram-login-container');
-          container.innerHTML = `
+        // Global auth handler - MUST be defined before widget loads
+        window.onTelegramAuth = function(user) {
+          log('Auth received: ' + JSON.stringify(user));
+
+          // Store auth data
+          const authData = {
+            id: user.id,
+            first_name: user.first_name,
+            username: user.username,
+            auth_date: user.auth_date,
+            timestamp: Date.now()
+          };
+
+          localStorage.setItem('telegram_user', JSON.stringify(authData));
+          log('Auth data stored for user: ' + user.id);
+
+          // Update UI
+          document.getElementById('telegram-login-container').innerHTML = `
+            <div id="debug-info"></div>
             <div style="margin: 10px 0; padding: 10px; background: #e3f2fd; border-radius: 5px;">
-              ✅ Logged in as ${user.first_name} ${user.username ? `(@${user.username})` : ''}
+              ✅ Logged in as ${user.first_name} ${user.username ? `(@${user.username})` : ''} [ID: ${user.id}]
               <button onclick="handleLogout()">Logout</button>
             </div>
           `;
-        }
 
-        // Logout handler
+          // Force search refresh
+          if (searchBox.value.trim()) {
+            searchVideos(searchBox.value.trim(), 1);
+          }
+        };
+
+        // Logout helper
         function handleLogout() {
           localStorage.removeItem('telegram_user');
           location.reload();
         }
 
-        // Check login on load
-        const stored = localStorage.getItem('telegram_user');
-        if (stored) {
-          try {
-            const user = JSON.parse(stored);
-            console.log('[AUTH] Found stored session:', user);
-            showLoggedInState(user);
-          } catch (e) {
-            console.error('[AUTH] Error loading stored auth:', e);
-            localStorage.removeItem('telegram_user');
+        // Check stored login on page load
+        document.addEventListener('DOMContentLoaded', () => {
+          const stored = localStorage.getItem('telegram_user');
+          log('Checking stored auth...');
+          
+          if (stored) {
+            try {
+              const user = JSON.parse(stored);
+              log('Found stored auth for user: ' + user.id);
+              window.onTelegramAuth(user); // Reuse auth handler
+            } catch (e) {
+              log('Error loading stored auth: ' + e.message);
+              localStorage.removeItem('telegram_user');
+            }
+          } else {
+            log('No stored auth found');
           }
-        }
+        });
       </script>
 
-      <!-- Login widget (only shown when not logged in) -->
+      <!-- Telegram widget -->
       <script 
         async 
         src="https://telegram.org/js/telegram-widget.js?22" 
