@@ -34,88 +34,65 @@
 </head>
 <body>
   <div class="search-container">
-    <div id="telegram-login-container"></div>
+    <div id="telegram-login-container">
+      <script 
+          async 
+          src="https://telegram.org/js/telegram-widget.js?22" 
+          data-telegram-login="KakifilemBot"
+          data-size="large"
+          data-radius="8"
+          data-callback-url="https://www.kakifilem.com/auth"
+          data-onauth="onTelegramLogin(user)">
+      </script>
+    </div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
     <div id="results"></div>
     <div id="pagination" class="pagination"></div>
   </div>
 
   <script>
-    // Debug logging setup
+    // Debug logging
     const debug = {
         log: (...args) => console.log('[DEBUG]', new Date().toISOString(), ...args),
         error: (...args) => console.error('[ERROR]', new Date().toISOString(), ...args)
     };
 
-    debug.log('Initializing...');
+    debug.log('Page initializing on:', window.location.hostname);
 
-    // Centralize auth management
-    const auth = {
-        save: (user) => {
-            const data = {
-                user: user,
-                timestamp: new Date().getTime()
-            };
-            debug.log('Saving auth data:', data);
-            localStorage.setItem('telegram_auth', JSON.stringify(data));
-            sessionStorage.setItem('telegram_auth', JSON.stringify(data));
-        },
-        load: () => {
-            const stored = localStorage.getItem('telegram_auth') || sessionStorage.getItem('telegram_auth');
-            if (!stored) {
-                debug.log('No stored auth found');
-                return null;
-            }
-            try {
-                const data = JSON.parse(stored);
-                const age = new Date().getTime() - data.timestamp;
-                debug.log('Found stored auth, age:', Math.round(age/1000), 'seconds');
-                if (age < 24 * 60 * 60 * 1000) {
-                    return data.user;
-                }
-                debug.log('Auth expired');
-                auth.clear();
-            } catch (e) {
-                debug.error('Error loading auth:', e);
-                auth.clear();
-            }
-            return null;
-        },
-        clear: () => {
-            debug.log('Clearing auth data');
-            localStorage.removeItem('telegram_auth');
-            sessionStorage.removeItem('telegram_auth');
+    // Simple auth handler
+    function onTelegramLogin(user) {
+        debug.log('Login callback received:', user);
+        
+        if (!user || !user.id) {
+            debug.error('Invalid login data');
+            return;
         }
-    };
 
-    // Global auth handler
-    window.onTelegramAuth = function(user) {
-        debug.log('Auth callback received:', user);
-        if (user && user.id) {
-            auth.save(user);
-            const container = document.getElementById('telegram-login-container');
-            container.innerHTML = `
-                <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
-                    ✅ Logged in as ${user.first_name} (${user.id})
-                    <button onclick="handleLogout()">Logout</button>
-                </div>
-            `;
-            // Refresh search if needed
-            if (searchBox.value.trim()) {
-                searchVideos(searchBox.value.trim(), currentPage);
-            }
+        // Store user data
+        localStorage.setItem('telegram_user', JSON.stringify(user));
+        debug.log('Stored user data:', user.id);
+
+        // Update UI
+        const container = document.getElementById('telegram-login-container');
+        container.innerHTML = `
+            <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+                ✅ Logged in as ${user.first_name} 
+                <button onclick="location.reload()">Logout</button>
+            </div>
+        `;
+
+        // Refresh search if needed
+        if (searchBox.value.trim()) {
+            searchVideos(searchBox.value.trim(), currentPage);
         }
-    };
-
-    function handleLogout() {
-        debug.log('Handling logout');
-        auth.clear();
-        location.reload();
     }
+
+    // Make login handler global
+    window.onTelegramLogin = onTelegramLogin;
 
     async function searchVideos(query, page) {
       try {
-        const user = auth.load();
+        const user = JSON.parse(localStorage.getItem('telegram_user'));
         const telegram_id = user ? user.id : null;
         debug.log('Searching with telegram_id:', telegram_id);
         
@@ -137,7 +114,7 @@
         return;
       }
 
-      const authData = localStorage.getItem('telegram_auth');
+      const authData = localStorage.getItem('telegram_user');
       const loggedIn = !!authData;
 
       data.results.forEach(video => {
@@ -193,19 +170,19 @@
 
     function getVideo(token) {
       debug.log('Getting video with token:', token);
-      const authData = localStorage.getItem('telegram_auth');
+      const authData = localStorage.getItem('telegram_user');
       if (!authData) {
         alert('Please login with Telegram first');
         return;
       }
 
       try {
-        const { user } = JSON.parse(authData);
-        if (!user || !user.id) throw new Error('Invalid user data');
-        window.location.href = `/countdown?token=${token}&telegram_id=${user.id}`;
+        const { id } = JSON.parse(authData);
+        if (!id) throw new Error('Invalid user data');
+        window.location.href = `/countdown?token=${token}&telegram_id=${id}`;
       } catch (e) {
         debug.error('Login error:', e);
-        localStorage.removeItem('telegram_auth');
+        localStorage.removeItem('telegram_user');
         alert('Please login with Telegram first');
         location.reload();
       }
@@ -243,29 +220,6 @@
         timeout = setTimeout(later, wait);
       };
     }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        debug.log('Checking auth on page load');
-        const user = auth.load();
-        if (user) {
-            debug.log('Found valid auth, showing logged in state');
-            window.onTelegramAuth(user);
-        } else {
-            debug.log('No valid auth found, showing login widget');
-            const container = document.getElementById('telegram-login-container');
-            container.innerHTML = `
-                <script 
-                    async 
-                    src="https://telegram.org/js/telegram-widget.js?22" 
-                    data-telegram-login="KakifilemBot"
-                    data-size="large"
-                    data-radius="8"
-                    data-onauth="window.onTelegramAuth(user)">
-                <\/script>
-            `;
-        }
-    });
   </script>
 </body>
 </html>
