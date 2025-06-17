@@ -221,25 +221,30 @@ def search_videos(request):
     per_page = 10
 
     try:
+        # Convert telegram_id to int if it exists, otherwise keep as None
+        user_id = int(telegram_id) if telegram_id else None
+        
         total_count, videos = get_videos_by_name(query, page, per_page)
         results = []
         
         for video in videos:
-            # Only create token if user is logged in
-            if telegram_id:
+            # Only create and save token if user is logged in
+            token = None
+            if user_id:
                 token = hashlib.sha256(f"{video[0]}:{datetime.now().timestamp()}".encode()).hexdigest()[:32]
-                save_token(video[0], telegram_id, token)
-            else:
-                token = None
+                try:
+                    save_token(video[0], user_id, token)
+                except Exception as e:
+                    logger.error(f"Error saving token: {e}")
+                    continue
 
             result = {
                 'name': video[1],
                 'size': video[4],
                 'token': token,
-                'needs_login': not telegram_id
+                'needs_login': user_id is None
             }
             
-            # Add thumbnail if available
             if video[6]:  # thumbnail_id is at index 6
                 result['thumbnail'] = video[6]
 
