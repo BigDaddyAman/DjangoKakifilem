@@ -53,8 +53,10 @@
         let currentPage = 1;
         const perPage = 10;
 
+        // Update the existing searchVideos function
         async function searchVideos(query, page) {
             try {
+                // The backend will now handle both formats (with/without dia.)
                 const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}`);
                 const data = await response.json();
                 displayResults(data);
@@ -122,10 +124,19 @@
             return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
         }
 
+        // Replace or update the existing event listener
         searchBox.addEventListener('input', debounce(() => {
             currentPage = 1;
-            searchVideos(searchBox.value, currentPage);
+            // Don't modify the search term - backend handles variations
+            searchVideos(searchBox.value.trim(), currentPage);
         }, 500));
+        
+        // Add Enter key support if not already present
+        searchBox.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchVideos(searchBox.value.trim(), currentPage);
+            }
+        });
 
         function debounce(func, wait) {
             let timeout;

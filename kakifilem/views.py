@@ -28,7 +28,7 @@ def get_db_connection():
         raise
 
 def get_videos_by_name(search_term: str, page: int = 1, per_page: int = 10):
-    """Search videos with pagination"""
+    """Search videos with pagination and flexible search patterns"""
     if not search_term:
         return 0, []
 
@@ -36,24 +36,70 @@ def get_videos_by_name(search_term: str, page: int = 1, per_page: int = 10):
     cur = conn.cursor()
     
     try:
-        # First get total count
-        cur.execute("""
-            SELECT COUNT(*) FROM videos 
-            WHERE video_name ILIKE %s
-        """, (f"%{search_term}%",))
-        total_count = cur.fetchone()[0]
-
-        # Then get paginated results
-        offset = (page - 1) * per_page
-        cur.execute("""
-            SELECT id, video_name, caption, file_id, file_size, upload_date
-            FROM videos 
-            WHERE video_name ILIKE %s
-            ORDER BY upload_date DESC
-            LIMIT %s OFFSET %s
-        """, (f"%{search_term}%", per_page, offset))
+        # Clean and prepare search patterns
+        search_patterns = []
         
+        # Original search term
+        search_patterns.append(search_term)
+        
+        # Add "dia." prefix if not present
+        if not search_term.lower().startswith('dia.'):
+            search_patterns.append(f"dia.{search_term}")
+            
+        # Remove "dia." prefix if present
+        if search_term.lower().startswith('dia.'):
+            search_patterns.append(search_term[4:])
+            
+        # Create patterns with dots and spaces
+        for pattern in search_patterns[:]:
+            search_patterns.append(pattern.replace(' ', '.'))
+            search_patterns.append(pattern.replace('.', ' '))
+            
+        # Remove duplicates while preserving order
+        search_patterns = list(dict.fromkeys(search_patterns))
+        
+        # Build dynamic query parts
+        like_conditions = []
+        query_params = []
+        
+        for pattern in search_patterns:
+            like_conditions.append("LOWER(video_name) LIKE LOWER(%s)")
+            query_params.append(f"%{pattern}%")
+            
+        # Get total count
+        count_query = f"""
+            SELECT COUNT(DISTINCT id) FROM videos 
+            WHERE {' OR '.join(like_conditions)}
+        """
+        cur.execute(count_query, query_params)
+        total_count = cur.fetchone()[0]
+        
+        # Get paginated results
+        offset = (page - 1) * per_page
+        query = f"""
+            SELECT DISTINCT id, video_name, caption, file_id, file_size, 
+                   upload_date, thumbnail_id
+            FROM videos 
+            WHERE {' OR '.join(like_conditions)}
+            ORDER BY 
+                CASE 
+                    WHEN LOWER(video_name) = LOWER(%s) THEN 1
+                    ELSE 2
+                END,
+                upload_date DESC
+            LIMIT %s OFFSET %s
+        """
+        
+        # Add parameters for exact match and pagination
+        query_params.append(search_term)  # For exact match priority
+        query_params.extend([per_page, offset])  # For pagination
+        
+        cur.execute(query, query_params)
         results = cur.fetchall()
+        
+        logger.info(f"Search patterns tried: {search_patterns}")
+        logger.info(f"Found {total_count} results for '{search_term}'")
+        
         return total_count, results
 
     except Exception as e:
@@ -184,11 +230,18 @@ def search_videos(request):
             # Save token with null user_id since we don't have authentication
             save_token(video[0], None, token)
 
-            results.append({
+            # Add result with thumbnail if available
+            result = {
                 'name': video[1],
                 'size': video[4],
-                'token': token
-            })
+                'token': token,
+            }
+            
+            # Add thumbnail if available
+            if video[6]:  # Check if thumbnail_id exists
+                result['thumbnail'] = video[6]
+
+            results.append(result)
 
         return JsonResponse({
             'total': total_count,
