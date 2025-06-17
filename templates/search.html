@@ -34,17 +34,7 @@
 </head>
 <body>
   <div class="search-container">
-    <div id="telegram-login-container">
-      <script 
-        async 
-        src="https://telegram.org/js/telegram-widget.js?22" 
-        data-telegram-login="KakifilemBot"
-        data-size="large"
-        data-radius="8"
-        data-onauth="onTelegramAuth(user)"
-        data-request-access="write">
-      </script>
-    </div>
+    <div id="telegram-login-container"></div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
     <div id="results"></div>
     <div id="pagination" class="pagination"></div>
@@ -60,11 +50,29 @@
     let currentPage = 1;
     const perPage = 10;
 
-    function onTelegramAuth(user) {
-      console.log("Auth received:", user);
+    // Initialize login widget
+    function initTelegramWidget() {
+      const container = document.getElementById('telegram-login-container');
+      container.innerHTML = `
+        <script 
+          async 
+          src="https://telegram.org/js/telegram-widget.js?22" 
+          data-telegram-login="KakifilemBot"
+          data-size="large"
+          data-radius="8"
+          data-onauth="window.onTelegramAuth(user)">
+        <\/script>
+      `;
+    }
+
+    // Global auth handler with immediate UI update
+    window.onTelegramAuth = function(user) {
+      console.log("Auth callback received:", user);
       if (user && user.id) {
+        // Store user data
         localStorage.setItem('telegram_user', JSON.stringify(user));
         
+        // Update UI immediately without reload
         const container = document.getElementById('telegram-login-container');
         container.innerHTML = `
           <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
@@ -72,29 +80,23 @@
             <button onclick="handleLogout()">Logout</button>
           </div>
         `;
-        
-        // Sync login across domains
-        try {
-          window.localStorage.setItem('telegram_user', JSON.stringify(user));
-          if (window.location.hostname === 'www.kakifilem.com') {
-            document.cookie = `telegram_user=${JSON.stringify(user)};domain=.kakifilem.com;path=/`;
-          }
-        } catch (e) {
-          console.error("Error syncing login:", e);
-        }
 
+        // Force refresh search results
         if (searchBox.value.trim()) {
           searchVideos(searchBox.value.trim(), currentPage);
         }
       }
-    }
-    window.onTelegramAuth = onTelegramAuth;
+    };
 
     function handleLogout() {
       localStorage.removeItem('telegram_user');
-      window.location.reload();
+      initTelegramWidget();
+      if (searchBox.value.trim()) {
+        searchVideos(searchBox.value.trim(), currentPage);
+      }
     }
 
+    // Check login state on page load
     document.addEventListener('DOMContentLoaded', function() {
       console.log("Page loaded, checking auth state");
       const userData = localStorage.getItem('telegram_user');
@@ -102,13 +104,15 @@
         try {
           const user = JSON.parse(userData);
           console.log("Found stored user data:", user);
-          onTelegramAuth(user);
+          window.onTelegramAuth(user);
         } catch (e) {
           console.error("Error parsing stored user data:", e);
           localStorage.removeItem('telegram_user');
+          initTelegramWidget();
         }
       } else {
         console.log("No stored user data found");
+        initTelegramWidget();
       }
     });
 
@@ -203,7 +207,7 @@
         console.error('Login error:', e);
         localStorage.removeItem('telegram_user');
         alert('Please login with Telegram first');
-        showTelegramWidget();
+        initTelegramWidget();
       }
     }
 
