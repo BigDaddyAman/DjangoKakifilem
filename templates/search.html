@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KakiFilem Search</title>
+  <script async src="https://telegram.org/js/telegram-widget.js"></script>
   <style>
     .search-container {
       max-width: 800px;
@@ -33,199 +34,229 @@
 </head>
 <body>
   <div class="search-container">
-    <div id="telegram-login-container"></div>
+    <div id="telegram-login-container">
+      <script 
+          async 
+          src="https://telegram.org/js/telegram-widget.js?22" 
+          data-telegram-login="KakifilemBot"
+          data-size="large"
+          data-radius="8"
+          data-request-access="write"
+          data-onauth="window.onTelegramAuth(user)">
+      </script>
+    </div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
     <div id="results"></div>
     <div id="pagination" class="pagination"></div>
   </div>
 
   <script>
+    // Debug logging
     const debug = {
         log: (...args) => console.log('[DEBUG]', new Date().toISOString(), ...args),
         error: (...args) => console.error('[ERROR]', new Date().toISOString(), ...args)
     };
 
-    const auth = {
-        save: (user) => {
-            const data = { user, timestamp: new Date().getTime() };
-            localStorage.setItem('telegram_auth', JSON.stringify(data));
-            sessionStorage.setItem('telegram_auth', JSON.stringify(data));
-        },
-        load: () => {
-            const stored = localStorage.getItem('telegram_auth') || sessionStorage.getItem('telegram_auth');
-            if (!stored) return null;
-            try {
-                const data = JSON.parse(stored);
-                if (new Date().getTime() - data.timestamp < 24 * 60 * 60 * 1000) {
-                    return data.user;
-                }
-                auth.clear();
-            } catch (e) {
-                auth.clear();
-            }
-            return null;
-        },
-        clear: () => {
-            localStorage.removeItem('telegram_auth');
-            sessionStorage.removeItem('telegram_auth');
-        }
-    };
+    debug.log('Starting login check...');
+    const searchBox = document.getElementById('searchBox');
+    const resultsDiv = document.getElementById('results');
+    const paginationDiv = document.getElementById('pagination');
+    let currentPage = 1;
+    const perPage = 10;
 
+    // Global auth handler
     window.onTelegramAuth = function(user) {
-        debug.log('Auth success', user);
-        auth.save(user);
-        renderLoggedIn(user);
-        if (searchBox.value.trim()) {
-            searchVideos(searchBox.value.trim(), 1);
+        debug.log('Received auth:', user);
+        if (user && user.id) {
+            // Store user data
+            const authData = {
+                id: user.id,
+                first_name: user.first_name,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem('telegram_user', JSON.stringify(authData));
+            debug.log('Stored auth data:', authData);
+
+            // Update UI immediately
+            showLoggedInState(authData);
+
+            // Refresh search results if any
+            if (searchBox.value.trim()) {
+                searchVideos(searchBox.value.trim(), currentPage);
+            }
         }
     };
 
-    function renderLoggedIn(user) {
+    function showLoggedInState(userData) {
         const container = document.getElementById('telegram-login-container');
         container.innerHTML = `
             <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
-                ✅ Logged in as ${user.first_name} (${user.id})
-                <button onclick="handleLogout()">Logout</button>
+                ✅ Logged in as ${userData.first_name}
+                <button onclick="handleLogout()" style="margin-left: 10px;">Logout</button>
             </div>
         `;
-    }
-
-    function showTelegramWidget() {
-        const container = document.getElementById('telegram-login-container');
-        container.innerHTML = '';
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = "https://telegram.org/js/telegram-widget.js?22";
-        script.setAttribute('data-telegram-login', 'KakifilemBot');
-        script.setAttribute('data-size', 'large');
-        script.setAttribute('data-radius', '8');
-        script.setAttribute('data-userpic', 'true');
-        script.setAttribute('data-request-access', 'write');
-        script.setAttribute('data-onauth', 'onTelegramAuth');
-        container.appendChild(script);
+        debug.log('Updated UI for logged in user:', userData.id);
     }
 
     function handleLogout() {
-        auth.clear();
-        showTelegramWidget();
+        debug.log('Handling logout');
+        localStorage.removeItem('telegram_user');
+        location.reload();
     }
+
+    // Check login state on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        debug.log('Checking stored auth...');
+        const stored = localStorage.getItem('telegram_user');
+        if (stored) {
+            try {
+                const userData = JSON.parse(stored);
+                debug.log('Found stored user:', userData);
+                if (userData && userData.id) {
+                    showLoggedInState(userData);
+                } else {
+                    debug.log('Invalid stored data');
+                    localStorage.removeItem('telegram_user');
+                }
+            } catch (e) {
+                debug.error('Error parsing stored auth:', e);
+                localStorage.removeItem('telegram_user');
+            }
+        } else {
+            debug.log('No stored auth found');
+        }
+    });
 
     async function searchVideos(query, page) {
-        const user = auth.load();
+      try {
+        const user = JSON.parse(localStorage.getItem('telegram_user'));
         const telegram_id = user ? user.id : null;
-        try {
-            const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`);
-            const data = await response.json();
-            displayResults(data, page);
-        } catch (err) {
-            debug.error('Search error', err);
-            document.getElementById('results').innerHTML = 'Error performing search';
-        }
+        debug.log('Searching with telegram_id:', telegram_id);
+        
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`);
+        const data = await response.json();
+        displayResults(data);
+      } catch (error) {
+        debug.error('Search error:', error);
+        resultsDiv.innerHTML = 'Error performing search';
+      }
     }
 
-    function displayResults(data, currentPage) {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = '';
-        if (!data.results || data.results.length === 0) {
-            resultsDiv.innerHTML = 'No results found';
-            return;
+    function displayResults(data) {
+      debug.log('Displaying search results:', data);
+      resultsDiv.innerHTML = '';
+      if (data.results.length === 0) {
+        debug.log('No results found');
+        resultsDiv.innerHTML = 'No results found';
+        return;
+      }
+
+      const authData = localStorage.getItem('telegram_user');
+      const loggedIn = !!authData;
+
+      data.results.forEach(video => {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+
+        let thumbnailHtml = video.thumbnail ? `<img src="${video.thumbnail}" alt="Video thumbnail" style="max-width: 200px;">` : '';
+
+        let buttonHtml = '';
+        if (video.needs_login && !loggedIn) {
+          buttonHtml = `<button onclick="alert('Please login with Telegram first')">Login Required</button>`;
+        } else {
+          buttonHtml = `<button onclick="getVideo('${video.token}')">Get Video</button>`;
         }
 
-        const loggedIn = !!auth.load();
+        div.innerHTML = `
+          ${thumbnailHtml}
+          <h3>${video.name}</h3>
+          <p>Size: ${formatSize(video.size)}</p>
+          ${buttonHtml}
+        `;
+        resultsDiv.appendChild(div);
+      });
 
-        data.results.forEach(video => {
-            const div = document.createElement('div');
-            div.className = 'result-item';
-
-            let thumbnailHtml = video.thumbnail ? `<img src="${video.thumbnail}" alt="Video thumbnail" style="max-width: 200px;">` : '';
-
-            let buttonHtml = '';
-            if (video.needs_login && !loggedIn) {
-                buttonHtml = `<button onclick="alert('Please login with Telegram first')">Login Required</button>`;
-            } else {
-                buttonHtml = `<button onclick="getVideo('${video.token}')">Get Video</button>`;
-            }
-
-            div.innerHTML = `
-              ${thumbnailHtml}
-              <h3>${video.name}</h3>
-              <p>Size: ${formatSize(video.size)}</p>
-              ${buttonHtml}
-            `;
-            resultsDiv.appendChild(div);
-        });
-
-        updatePagination(data.total, currentPage);
+      updatePagination(data.total, data.page);
     }
 
     function updatePagination(total, currentPage) {
-        const paginationDiv = document.getElementById('pagination');
-        const perPage = 10; 
-        const totalPages = Math.ceil(total / perPage);
-        let html = '';
+      debug.log('Updating pagination:', { total, currentPage });
+      const totalPages = Math.ceil(total / perPage);
+      let html = '';
 
-        if (currentPage > 1) {
-            html += `<button onclick="changePage(${currentPage - 1})">Previous</button>`;
-        }
+      if (currentPage > 1) {
+        html += `<button onclick="changePage(${currentPage - 1})">Previous</button>`;
+      }
 
-        for (let i = 1; i <= totalPages; i++) {
-            html += `<button onclick="changePage(${i})" ${i === currentPage ? 'disabled' : ''}>${i}</button>`;
-        }
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button onclick="changePage(${i})" ${i === currentPage ? 'disabled' : ''}>${i}</button>`;
+      }
 
-        if (currentPage < totalPages) {
-            html += `<button onclick="changePage(${currentPage + 1})">Next</button>`;
-        }
+      if (currentPage < totalPages) {
+        html += `<button onclick="changePage(${currentPage + 1})">Next</button>`;
+      }
 
-        paginationDiv.innerHTML = html;
+      paginationDiv.innerHTML = html;
     }
 
     function changePage(page) {
-        searchVideos(document.getElementById('searchBox').value, page);
+      debug.log('Changing page to:', page);
+      currentPage = page;
+      searchVideos(searchBox.value, page);
     }
 
     function getVideo(token) {
-        const user = auth.load();
-        if (!user) {
-            alert('Please login with Telegram first');
-            return;
-        }
-        window.location.href = `/countdown?token=${token}&telegram_id=${user.id}`;
+      debug.log('Getting video with token:', token);
+      const authData = localStorage.getItem('telegram_user');
+      if (!authData) {
+        alert('Please login with Telegram first');
+        return;
+      }
+
+      try {
+        const { id } = JSON.parse(authData);
+        if (!id) throw new Error('Invalid user data');
+        window.location.href = `/countdown?token=${token}&telegram_id=${id}`;
+      } catch (e) {
+        debug.error('Login error:', e);
+        localStorage.removeItem('telegram_user');
+        alert('Please login with Telegram first');
+        location.reload();
+      }
     }
 
     function formatSize(bytes) {
-        if (!bytes) return 'Unknown size';
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(1024));
-        return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+      if (!bytes) return 'Unknown size';
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
     }
+
+    searchBox.addEventListener('input', debounce(() => {
+      debug.log('Search box input detected');
+      currentPage = 1;
+      searchVideos(searchBox.value.trim(), currentPage);
+    }, 500));
+
+    searchBox.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        debug.log('Search box enter key pressed');
+        currentPage = 1;
+        searchVideos(searchBox.value.trim(), currentPage);
+      }
+    });
 
     function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        }
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const user = auth.load();
-        if (user) {
-            renderLoggedIn(user);
-        } else {
-            showTelegramWidget();
-        }
-
-        const searchBox = document.getElementById('searchBox');
-        searchBox.addEventListener('input', debounce(() => {
-            searchVideos(searchBox.value.trim(), 1);
-        }, 500));
-
-        searchBox.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchVideos(searchBox.value.trim(), 1);
-            }
-        });
-    });
   </script>
 </body>
 </html>
