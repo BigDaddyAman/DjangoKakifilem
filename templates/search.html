@@ -30,43 +30,10 @@
       padding: 5px 10px;
     }
   </style>
-  <script>
-    // Debug version of auth handler
-    function onTelegramAuth(user) {
-        console.log('[AUTH START]', new Date().toISOString());
-        console.log('[AUTH DATA]', user);
-        
-        if (!user || !user.id) {
-            console.error('[AUTH ERROR] Invalid user data');
-            return;
-        }
-
-        try {
-            // Log before storage
-            console.log('[AUTH] Storing user data...');
-            
-            const authData = {
-                ...user,
-                timestamp: Date.now()
-            };
-            localStorage.setItem('telegram_user', JSON.stringify(authData));
-            
-            console.log('[AUTH] Data stored, reloading page...');
-            window.location.reload();
-        } catch (e) {
-            console.error('[AUTH ERROR]', e);
-            alert('Login failed: ' + e.message);
-        }
-    }
-
-    // Make it globally available
-    window.onTelegramAuth = onTelegramAuth;
-    console.log('[INIT] Auth handler registered:', !!window.onTelegramAuth);
-  </script>
 </head>
 <body>
   <div class="search-container">
-    <!-- Update Telegram widget -->
+    <!-- Fix Telegram login widget -->
     <div id="telegram-login-container">
       <div id="login-status"></div>
       <script 
@@ -76,7 +43,6 @@
         data-size="large"
         data-radius="8"
         data-request-access="write"
-        data-auth-url="https://www.kakifilem.com/auth"
         data-onauth="window.onTelegramAuth">
       </script>
     </div>
@@ -86,13 +52,49 @@
   </div>
 
   <script>
-    // Debug logging setup
+    // Debug logging
     const debug = {
         log: (...args) => console.log('[DEBUG]', new Date().toISOString(), ...args),
         error: (...args) => console.error('[ERROR]', new Date().toISOString(), ...args)
     };
 
-    debug.log('Page initialized');
+    debug.log('Initializing...');
+    
+    // Global auth handler - MUST be defined before widget loads
+    window.onTelegramAuth = function(user) {
+        debug.log('[AUTH] Received:', user);
+        
+        if (!user || !user.id) {
+            debug.error('[AUTH] Invalid user data');
+            return;
+        }
+
+        try {
+            const authData = {
+                ...user,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('telegram_user', JSON.stringify(authData));
+            debug.log('[AUTH] Stored data for user:', user.id);
+
+            // Show logged in state
+            const container = document.getElementById('telegram-login-container');
+            container.innerHTML = `
+                <div style="margin: 10px 0; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+                    ✅ Logged in as ${user.first_name} 
+                    ${user.username ? `(@${user.username})` : ''}
+                    <button onclick="handleLogout()">Logout</button>
+                </div>
+            `;
+
+            // Refresh search if needed
+            if (searchBox.value.trim()) {
+                searchVideos(searchBox.value.trim(), currentPage);
+            }
+        } catch (e) {
+            debug.error('[AUTH] Error:', e);
+        }
+    };
 
     // Add status display
     function updateStatus(msg, isError = false) {
