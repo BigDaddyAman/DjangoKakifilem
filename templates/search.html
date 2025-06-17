@@ -34,7 +34,17 @@
 </head>
 <body>
     <div class="search-container">
-        <div id="telegram-login-container"></div>
+        <div id="telegram-login-container">
+            <script 
+                async 
+                src="https://telegram.org/js/telegram-widget.js?22" 
+                data-telegram-login="kakifilembot"
+                data-size="large"
+                data-radius="8"
+                data-onauth="window.onTelegramAuth(user)"
+                data-request-access="write">
+            </script>
+        </div>
 
         <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
         <div id="results"></div>
@@ -42,62 +52,38 @@
     </div>
 
     <script>
-        // Initialize Telegram Login Widget
-        function initTelegramLogin() {
-            const container = document.getElementById('telegram-login-container');
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = "https://telegram.org/js/telegram-widget.js?22";
-            script.dataset.telegramLogin = "KakifilemBot";
-            script.dataset.size = "large";
-            script.dataset.onauth = "onTelegramAuth(user)";
-            script.dataset.requestAccess = "write";
-            container.innerHTML = ''; // Clear container
-            container.appendChild(script);
-        }
-
-        // Global auth callback
-        function onTelegramAuth(user) {
-            console.log("Auth success:", user);
+        // Make auth handler global and simpler
+        window.onTelegramAuth = function(user) {
+            console.log("Telegram auth success:", user);
+            // Store user data
             localStorage.setItem('telegram_user', JSON.stringify(user));
-            showLoggedInState(user);
             
-            // Refresh search if needed
-            if (searchBox.value.trim()) {
-                searchVideos(searchBox.value.trim(), currentPage);
-            }
-        }
-        window.onTelegramAuth = onTelegramAuth; // Make it globally accessible
-
-        function showLoggedInState(user) {
+            // Update UI
             const container = document.getElementById('telegram-login-container');
             container.innerHTML = `
                 <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
-                    ✅ Logged in as ${user.first_name} (${user.id})
+                    ✅ Logged in as ${user.first_name}
                     <button onclick="handleLogout()" style="margin-left: 10px;">Logout</button>
                 </div>
             `;
-        }
+            
+            // Refresh search if there's a query
+            if (searchBox.value.trim()) {
+                searchVideos(searchBox.value.trim(), currentPage);
+            }
+        };
 
         function handleLogout() {
             localStorage.removeItem('telegram_user');
-            initTelegramLogin(); // Show login widget again
+            location.reload();
         }
 
-        // Check login state and initialize on page load
+        // Check login state on page load
         document.addEventListener('DOMContentLoaded', () => {
             const userData = localStorage.getItem('telegram_user');
             if (userData) {
-                try {
-                    const user = JSON.parse(userData);
-                    showLoggedInState(user);
-                } catch (e) {
-                    console.error('Invalid user data:', e);
-                    localStorage.removeItem('telegram_user');
-                    initTelegramLogin();
-                }
-            } else {
-                initTelegramLogin();
+                const user = JSON.parse(userData);
+                onTelegramAuth(user);
             }
         });
 
