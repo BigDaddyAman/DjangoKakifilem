@@ -35,8 +35,10 @@ ALLOWED_HOSTS = [
     'www.kakifilem.com',
     'bot.kakifilem.com',
     'web-production-a47d1.up.railway.app',
+    'kakifilembot-production.up.railway.app',  # Add this line
     'localhost',
     '127.0.0.1',
+    '*',  # Add this temporarily to debug domain issues
 ]
 
 # Bot settings
@@ -168,6 +170,8 @@ USE_X_FORWARDED_PORT = True
 CORS_ALLOWED_ORIGINS = [
     "https://www.kakifilem.com",
     "https://bot.kakifilem.com",
+    "https://web-production-a47d1.up.railway.app",
+    "https://kakifilembot-production.up.railway.app",  # Add this line
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -189,6 +193,8 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     'https://www.kakifilem.com',
     'https://bot.kakifilem.com',
+    'https://web-production-a47d1.up.railway.app',
+    'https://kakifilembot-production.up.railway.app',  # Add this line
 ]
 
 LOGGING = {
