@@ -33,13 +33,18 @@
 </head>
 <body>
   <div class="search-container">
-    <!-- Simple login widget -->
+    <!-- Fixed login widget -->
     <div id="telegram-login-container">
       <script>
         function onTelegramAuth(user) {
-          alert('Logged in as ' + user.first_name + ' ' + user.last_name + ' (' + user.id + ')');
-          localStorage.setItem('telegram_user', JSON.stringify(user));
-          location.reload();
+          console.log('Auth received:', user);
+          if (user && user.id) {
+            localStorage.setItem('telegram_user', JSON.stringify({
+              ...user,
+              timestamp: Date.now()
+            }));
+            location.reload();
+          }
         }
       </script>
       
@@ -75,13 +80,26 @@
     let currentPage = 1;
     const perPage = 10;
 
+    // Add fetch options for CORS
+    const fetchOptions = {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    };
+
     async function searchVideos(query, page) {
       try {
         const user = JSON.parse(localStorage.getItem('telegram_user'));
         const telegram_id = user ? user.id : null;
         console.log('Searching with telegram_id:', telegram_id);
         
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`);
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`,
+          fetchOptions
+        );
         const data = await response.json();
         displayResults(data);
       } catch (error) {
