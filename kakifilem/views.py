@@ -235,7 +235,7 @@ def search_videos(request):
         
         for video in videos:
             # Only create and save token if user is logged in
-            token = None
+            token = None 
             if user_id:
                 token = hashlib.sha256(f"{video[0]}:{datetime.now().timestamp()}".encode()).hexdigest()[:32]
                 try:

@@ -41,8 +41,8 @@
         data-telegram-login="KakifilemBot"
         data-size="large"
         data-radius="8"
-        data-auth-url="https://www.kakifilem.com/auth"
-        data-onauth="onTelegramAuth(user)">
+        data-onauth="onTelegramAuth(user)"
+        data-request-access="write">
       </script>
     </div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
@@ -52,6 +52,7 @@
 
   <script>
     console.log("Script initialized");
+    console.log("Domain:", window.location.hostname);
 
     const searchBox = document.getElementById('searchBox');
     const resultsDiv = document.getElementById('results');
@@ -60,9 +61,8 @@
     const perPage = 10;
 
     function onTelegramAuth(user) {
-      console.log("Auth callback received:", user);
+      console.log("Auth received:", user);
       if (user && user.id) {
-        console.log("Valid user data received");
         localStorage.setItem('telegram_user', JSON.stringify(user));
         
         const container = document.getElementById('telegram-login-container');
@@ -73,6 +73,16 @@
           </div>
         `;
         
+        // Sync login across domains
+        try {
+          window.localStorage.setItem('telegram_user', JSON.stringify(user));
+          if (window.location.hostname === 'www.kakifilem.com') {
+            document.cookie = `telegram_user=${JSON.stringify(user)};domain=.kakifilem.com;path=/`;
+          }
+        } catch (e) {
+          console.error("Error syncing login:", e);
+        }
+
         if (searchBox.value.trim()) {
           searchVideos(searchBox.value.trim(), currentPage);
         }
