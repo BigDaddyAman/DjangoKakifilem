@@ -33,12 +33,12 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 # Update ALLOWED_HOSTS to be more permissive
 ALLOWED_HOSTS = [
     'www.kakifilem.com',
+    'kakifilem.com',  # Add base domain
     'bot.kakifilem.com',
     'web-production-a47d1.up.railway.app',
-    'kakifilembot-production.up.railway.app',  # Add this line
+    'kakifilembot-production.up.railway.app',
     'localhost',
     '127.0.0.1',
-    '*',  # Add this temporarily to debug domain issues
 ]
 
 # Bot settings
@@ -169,9 +169,8 @@ USE_X_FORWARDED_PORT = True
 # Add CORS settings
 CORS_ALLOWED_ORIGINS = [
     "https://www.kakifilem.com",
+    "https://kakifilem.com",
     "https://bot.kakifilem.com",
-    "https://web-production-a47d1.up.railway.app",
-    "https://kakifilembot-production.up.railway.app",  # Add this line
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -192,9 +191,8 @@ CORS_ALLOW_HEADERS = [
 
 CSRF_TRUSTED_ORIGINS = [
     'https://www.kakifilem.com',
+    'https://kakifilem.com',
     'https://bot.kakifilem.com',
-    'https://web-production-a47d1.up.railway.app',
-    'https://kakifilembot-production.up.railway.app',  # Add this line
 ]
 
 LOGGING = {
