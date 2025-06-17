@@ -217,30 +217,30 @@ def search_videos(request):
     """API endpoint for searching videos"""
     query = request.GET.get('q', '')
     page = int(request.GET.get('page', 1))
+    telegram_id = request.GET.get('telegram_id')
     per_page = 10
 
     try:
-        # Get total count and paginated results
         total_count, videos = get_videos_by_name(query, page, per_page)
-
-        # Format results
         results = []
+        
         for video in videos:
-            # Generate token for video using timestamp for uniqueness
-            token = hashlib.sha256(f"{video[0]}:{datetime.now().timestamp()}".encode()).hexdigest()[:32]
-            
-            # Save token with null user_id since we don't have authentication
-            save_token(video[0], None, token)
+            # Only create token if user is logged in
+            if telegram_id:
+                token = hashlib.sha256(f"{video[0]}:{datetime.now().timestamp()}".encode()).hexdigest()[:32]
+                save_token(video[0], telegram_id, token)
+            else:
+                token = None
 
-            # Add result with thumbnail if available
             result = {
                 'name': video[1],
                 'size': video[4],
                 'token': token,
+                'needs_login': not telegram_id
             }
             
             # Add thumbnail if available
-            if video[6]:  # Check if thumbnail_id exists
+            if video[6]:  # thumbnail_id is at index 6
                 result['thumbnail'] = video[6]
 
             results.append(result)

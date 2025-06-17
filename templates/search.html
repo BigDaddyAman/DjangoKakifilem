@@ -34,35 +34,9 @@
 </head>
 <body>
     <div class="search-container">
-        <!-- Update Telegram Login Widget with proper initialization -->
-        <script async src="https://telegram.org/js/telegram-widget.js?22"></script>
-        <div id="telegram-login">
-            <script>
-                window.TelegramLoginWidget = {
-                    dataOnauth: function(user) {
-                        localStorage.setItem('telegram_user', JSON.stringify(user));
-                    },
-                    getUserInfo: async function() {
-                        const userData = localStorage.getItem('telegram_user');
-                        return userData ? JSON.parse(userData) : null;
-                    }
-                };
-
-                // Initialize Telegram Login Widget
-                function initTelegramLogin() {
-                    const script = document.createElement('script');
-                    script.async = true;
-                    script.src = "https://telegram.org/js/telegram-widget.js?22";
-                    script.setAttribute('data-telegram-login', 'KakifilemBot');
-                    script.setAttribute('data-size', 'large');
-                    script.setAttribute('data-onauth', 'TelegramLoginWidget.dataOnauth(user)');
-                    script.setAttribute('data-request-access', 'write');
-                    document.getElementById('telegram-login').appendChild(script);
-                }
-
-                // Call initialization
-                initTelegramLogin();
-            </script>
+        <!-- Update Telegram Login Widget container -->
+        <div id="telegram-login-container">
+            <!-- Login status will be shown here -->
         </div>
 
         <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
@@ -71,6 +45,54 @@
     </div>
 
     <script>
+        window.TelegramLoginWidget = {
+            dataOnauth: function(user) {
+                localStorage.setItem('telegram_user', JSON.stringify(user));
+                updateLoginStatus(); // Add this line
+                // Refresh search results if there's a query
+                if (searchBox.value.trim()) {
+                    searchVideos(searchBox.value.trim(), currentPage);
+                }
+            },
+            getUserInfo: async function() {
+                const userData = localStorage.getItem('telegram_user');
+                return userData ? JSON.parse(userData) : null;
+            }
+        };
+
+        // Add new function to update login status
+        async function updateLoginStatus() {
+            const container = document.getElementById('telegram-login-container');
+            const user = await TelegramLoginWidget.getUserInfo();
+            
+            if (user) {
+                // Show logged in status
+                container.innerHTML = `
+                    <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+                        ✅ Logged in as ${user.first_name}
+                        <button onclick="logout()" style="margin-left: 10px;">Logout</button>
+                    </div>
+                `;
+            } else {
+                // Show login widget
+                container.innerHTML = '<div id="telegram-login"></div>';
+                initTelegramLogin();
+            }
+        }
+
+        // Add logout function
+        function logout() {
+            localStorage.removeItem('telegram_user');
+            updateLoginStatus();
+            // Refresh search results if there's a query
+            if (searchBox.value.trim()) {
+                searchVideos(searchBox.value.trim(), currentPage);
+            }
+        }
+
+        // Call updateLoginStatus on page load
+        document.addEventListener('DOMContentLoaded', updateLoginStatus);
+
         const searchBox = document.getElementById('searchBox');
         const resultsDiv = document.getElementById('results');
         const paginationDiv = document.getElementById('pagination');
@@ -99,7 +121,7 @@
             }
         }
 
-        function displayResults(data) {
+        async function displayResults(data) {
             resultsDiv.innerHTML = '';
             if (data.results.length === 0) {
                 resultsDiv.innerHTML = 'No results found';
@@ -109,10 +131,25 @@
             data.results.forEach(video => {
                 const div = document.createElement('div');
                 div.className = 'result-item';
+                
+                // Add thumbnail if available
+                let thumbnailHtml = '';
+                if (video.thumbnail) {
+                    thumbnailHtml = `<img src="${video.thumbnail}" alt="Video thumbnail" style="max-width: 200px;">`;
+                }
+                
+                let buttonHtml = '';
+                if (video.needs_login) {
+                    buttonHtml = '<button onclick="alert(\'Please login with Telegram first\')">Login Required</button>';
+                } else {
+                    buttonHtml = `<button onclick="getVideo('${video.token}')">Get Video</button>`;
+                }
+
                 div.innerHTML = `
+                    ${thumbnailHtml}
                     <h3>${video.name}</h3>
                     <p>Size: ${formatSize(video.size)}</p>
-                    <button onclick="getVideo('${video.token}')">Get Video</button>
+                    ${buttonHtml}
                 `;
                 resultsDiv.appendChild(div);
             });
