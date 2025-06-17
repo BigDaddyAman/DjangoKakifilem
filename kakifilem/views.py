@@ -172,21 +172,17 @@ def search_videos(request):
     per_page = 10
 
     try:
-        # Connect to database
-        conn = get_db_connection()
-        cur = conn.cursor()
-
         # Get total count and paginated results
         total_count, videos = get_videos_by_name(query, page, per_page)
 
         # Format results
         results = []
         for video in videos:
-            # Generate token for video
-            token = hashlib.sha256(f"{video[0]}:{datetime.now()}".encode()).hexdigest()[:32]
+            # Generate token for video using timestamp for uniqueness
+            token = hashlib.sha256(f"{video[0]}:{datetime.now().timestamp()}".encode()).hexdigest()[:32]
             
-            # Save token
-            save_token(video[0], request.user.id if request.user.is_authenticated else None, token)
+            # Save token with null user_id since we don't have authentication
+            save_token(video[0], None, token)
 
             results.append({
                 'name': video[1],
