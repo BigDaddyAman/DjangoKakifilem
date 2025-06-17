@@ -35,7 +35,15 @@
 <body>
     <div class="search-container">
         <div id="telegram-login-container">
-            <!-- Telegram Login widget will be inserted here -->
+            <script 
+                async 
+                src="https://telegram.org/js/telegram-widget.js?22" 
+                data-telegram-login="KakifilemBot" 
+                data-size="large"
+                data-radius="8"
+                data-onauth="window.onTelegramAuth(user)"
+                data-request-access="write">
+            </script>
         </div>
 
         <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
@@ -44,69 +52,37 @@
     </div>
 
     <script>
-        // Initialize the Telegram Login Widget
-        function initTelegramLogin() {
-            const container = document.getElementById('telegram-login-container');
-            container.innerHTML = ''; // Clear container
-
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = "https://telegram.org/js/telegram-widget.js?22";
-            script.setAttribute('data-telegram-login', 'KakifilemBot');
-            script.setAttribute('data-size', 'large');
-            script.setAttribute('data-radius', '8');
-            script.setAttribute('data-auth-url', 'https://bot.kakifilem.com/auth');
-            script.setAttribute('data-request-access', 'write');
-            script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-
-            container.appendChild(script);
-        }
-
-        // Global auth handler
-        function onTelegramAuth(user) {
-            console.log('Auth success:', user);
+        // Simplify auth handling
+        window.onTelegramAuth = function(user) {
+            console.log("Login success:", user);
+            // Store user data
             localStorage.setItem('telegram_user', JSON.stringify(user));
-            showLoggedInState(user);
-        }
-        window.onTelegramAuth = onTelegramAuth; // Make it global
-
-        function showLoggedInState(user) {
+            
+            // Update UI
             const container = document.getElementById('telegram-login-container');
             container.innerHTML = `
                 <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
-                    ✅ Logged in as ${user.first_name} (ID: ${user.id})
-                    <button onclick="handleLogout()" style="margin-left: 10px;">Logout</button>
+                    ✅ Logged in as ${user.first_name}
+                    <button onclick="location.reload()">Logout</button>
                 </div>
             `;
-            // Refresh search results if any
-            if (searchBox.value.trim()) {
-                searchVideos(searchBox.value.trim(), currentPage);
-            }
-        }
 
-        function handleLogout() {
-            localStorage.removeItem('telegram_user');
-            initTelegramLogin(); // Show login widget again
-            // Refresh page to reset state
+            // Refresh search if needed
             if (searchBox.value.trim()) {
                 searchVideos(searchBox.value.trim(), currentPage);
             }
-        }
+        };
 
         // Check login state on page load
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             const userData = localStorage.getItem('telegram_user');
             if (userData) {
                 try {
                     const user = JSON.parse(userData);
-                    showLoggedInState(user);
+                    onTelegramAuth(user);
                 } catch (e) {
-                    console.error('Invalid user data:', e);
                     localStorage.removeItem('telegram_user');
-                    initTelegramLogin();
                 }
-            } else {
-                initTelegramLogin();
             }
         });
 
@@ -116,14 +92,20 @@
         let currentPage = 1;
         const perPage = 10;
 
+        // Update searchVideos to show debug
         async function searchVideos(query, page) {
             try {
                 const userData = localStorage.getItem('telegram_user');
                 const user = userData ? JSON.parse(userData) : null;
                 const telegram_id = user ? user.id : null;
                 
-                console.log("Searching with user:", telegram_id); // Debug log
-                
+                console.log("Search request:", {
+                    query: query,
+                    page: page,
+                    user: user,
+                    telegram_id: telegram_id
+                });
+
                 const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`);
                 const data = await response.json();
                 displayResults(data);
