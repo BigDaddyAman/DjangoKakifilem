@@ -164,6 +164,25 @@ def get_user_by_token(token):
         if conn:
             conn.close()
 
+def check_premium_status(user_id: int) -> bool:
+    """Check if user has premium access"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    try:
+        cur.execute("""
+            SELECT 1 FROM premium_users 
+            WHERE user_id = %s AND expiry_date > NOW()
+        """, (user_id,))
+        
+        return bool(cur.fetchone())
+    except Exception as e:
+        logger.error(f"Error checking premium status: {e}")
+        return False
+    finally:
+        cur.close()
+        conn.close()
+
 def index(request):
     # Check if request is from bot domain
     if request.get_host() != 'bot.kakifilem.com':
@@ -171,15 +190,13 @@ def index(request):
     return render(request, 'index.html')
 
 def countdown(request):
-    # Check if request is from bot domain
-    if request.get_host() != 'bot.kakifilem.com':
-        return redirect('https://bot.kakifilem.com/countdown/')
-    
     token = request.GET.get('token')
     video_name = request.GET.get('videoName')
+    telegram_id = request.GET.get('telegram_id')
     
-    # Get user_id from token
-    telegram_id = get_user_by_token(token)
+    # Redirect premium users directly to send_video
+    if telegram_id and check_premium_status(int(telegram_id)):
+        return redirect(f'/api/send_video?token={token}&telegram_id={telegram_id}')
     
     context = {
         'bot_api_url': settings.BOT_API_URL,
@@ -215,38 +232,41 @@ def search_videos(request):
     """API endpoint for searching videos"""
     query = request.GET.get('q', '')
     page = int(request.GET.get('page', 1))
-    per_page = 10
-
+    telegram_id = request.GET.get('telegram_id')
+    
     try:
-        # Get total count and paginated results
-        total_count, videos = get_videos_by_name(query, page, per_page)
+        # Check premium status if telegram_id provided
+        is_premium = False
+        if telegram_id:
+            try:
+                is_premium = check_premium_status(int(telegram_id))
+            except:
+                pass
 
-        # Format results
+        total_count, videos = get_videos_by_name(query, page, 10)
         results = []
+        
         for video in videos:
-            # Generate token for video using timestamp for uniqueness
             token = hashlib.sha256(f"{video[0]}:{datetime.now().timestamp()}".encode()).hexdigest()[:32]
-            
-            # Save token with null user_id since we don't have authentication
-            save_token(video[0], None, token)
+            save_token(video[0], telegram_id, token)
 
-            # Add result with thumbnail if available
             result = {
                 'name': video[1],
                 'size': video[4],
                 'token': token,
+                'direct_access': is_premium  # Add this flag
             }
             
-            # Add thumbnail if available
-            if video[6]:  # Check if thumbnail_id exists
+            if video[6]:  # If thumbnail exists
                 result['thumbnail'] = video[6]
-
+                
             results.append(result)
 
         return JsonResponse({
             'total': total_count,
             'page': page,
-            'results': results
+            'results': results,
+            'is_premium': is_premium
         })
 
     except Exception as e:

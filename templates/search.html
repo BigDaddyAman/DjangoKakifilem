@@ -53,13 +53,21 @@
         let currentPage = 1;
         const perPage = 10;
 
-        // Update the existing searchVideos function
         async function searchVideos(query, page) {
             try {
-                // The backend will now handle both formats (with/without dia.)
-                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}`);
+                const telegramUser = await TelegramLoginWidget.getUserInfo();
+                const telegram_id = telegramUser ? telegramUser.id : null;
+                
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`);
                 const data = await response.json();
-                displayResults(data);
+                
+                if (data.is_premium) {
+                    // Show premium UI
+                    displayPremiumResults(data);
+                } else {
+                    // Show regular UI
+                    displayResults(data);
+                }
             } catch (error) {
                 console.error('Search error:', error);
                 resultsDiv.innerHTML = 'Error performing search';
@@ -113,8 +121,29 @@
         }
 
         async function getVideo(token) {
-            // Redirect to countdown page
-            window.location.href = `/countdown?token=${token}`;
+            const telegramUser = await TelegramLoginWidget.getUserInfo();
+            if (!telegramUser || !telegramUser.id) {
+                alert('Please login with Telegram first');
+                return;
+            }
+
+            // Check if user is premium from response
+            if (telegramUser.is_premium) {
+                // Send directly to bot
+                fetch('/api/send_video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        telegram_id: telegramUser.id
+                    })
+                });
+            } else {
+                // Redirect to countdown page
+                window.location.href = `/countdown?token=${token}&telegram_id=${telegramUser.id}`;
+            }
         }
 
         function formatSize(bytes) {
@@ -124,14 +153,11 @@
             return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
         }
 
-        // Replace or update the existing event listener
         searchBox.addEventListener('input', debounce(() => {
             currentPage = 1;
-            // Don't modify the search term - backend handles variations
             searchVideos(searchBox.value.trim(), currentPage);
         }, 500));
         
-        // Add Enter key support if not already present
         searchBox.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 searchVideos(searchBox.value.trim(), currentPage);
