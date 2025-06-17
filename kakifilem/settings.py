@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-e_rhw(l^0h!t8lgo(y_-#sx+ws
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Update ALLOWED_HOSTS to be more permissive
+# Update ALLOWED_HOSTS to include all domains
 ALLOWED_HOSTS = [
     'www.kakifilem.com',
     'bot.kakifilem.com',
@@ -153,7 +153,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Security settings - disable SSL/HTTPS enforcement
 SECURE_SSL_REDIRECT = False
-SECURE_PROXY_SSL_HEADER = None
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 
@@ -166,19 +166,23 @@ SESSION_COOKIE_SECURE = False
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-# Add CORS settings
+# Update CORS settings
 CORS_ALLOWED_ORIGINS = [
     'https://www.kakifilem.com',
-    'https://bot.kakifilem.com',
+    'https://bot.kakifilem.com', 
     'https://kakifilem.com',
+    'https://web-production-a47d1.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ]
 
+# Allow all domains in development
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'OPTIONS',
-]
+
+# Update CORS headers
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -186,20 +190,32 @@ CORS_ALLOW_HEADERS = [
     'content-type',
     'origin',
     'user-agent',
+    'x-csrftoken',
     'x-requested-with',
 ]
 
+# Update trusted origins
 CSRF_TRUSTED_ORIGINS = [
     'https://www.kakifilem.com',
     'https://bot.kakifilem.com',
     'https://kakifilem.com',
+    'https://web-production-a47d1.up.railway.app',
 ]
 
-# Add cookie settings
-SESSION_COOKIE_DOMAIN = '.kakifilem.com'
-CSRF_COOKIE_DOMAIN = '.kakifilem.com'
-SESSION_COOKIE_SAMESITE = None
-CSRF_COOKIE_SAMESITE = None
+# Disable CSRF in development
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS.extend([
+        'http://localhost:8000',
+        'http://127.0.0.1:8000'
+    ])
+
+# Update cookie settings
+SESSION_COOKIE_DOMAIN = None  # Let Django handle this automatically
+CSRF_COOKIE_DOMAIN = None
+SESSION_COOKIE_SAMESITE = 'Lax'  # Less strict than 'Strict'
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # Set to True only if using HTTPS
+CSRF_COOKIE_SECURE = False    # Set to True only if using HTTPS
 
 LOGGING = {
     'version': 1,
