@@ -41,9 +41,7 @@
         data-telegram-login="KakifilemBot"
         data-size="large"
         data-radius="8"
-        data-auth-url="https://www.kakifilem.com/auth"
-        data-request-access="write"
-        data-onauth="window.onTelegramAuth(user)">
+        data-onauth="onTelegramAuth(user)">
       </script>
     </div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
@@ -58,48 +56,36 @@
     let currentPage = 1;
     const perPage = 10;
 
-    // Update auth handler
-    window.onTelegramAuth = function(user) {
+    // Make auth handler global
+    function onTelegramAuth(user) {
       console.log("Auth received:", user);
-      localStorage.setItem('telegram_user', JSON.stringify(user));
-      showLoggedInState(user);
-      // Force reload search
-      if (searchBox.value.trim()) {
-        searchVideos(searchBox.value.trim(), currentPage);
-      }
-    };
-
-    function showLoggedInState(user) {
-      const container = document.getElementById('telegram-login-container');
-      container.innerHTML = `
-        <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
-          ✅ Logged in as ${user.first_name} (${user.id})
-          <button onclick="handleLogout()" style="margin-left: 10px;">Logout</button>
-        </div>
-      `;
-    }
-
-    function handleLogout() {
-      if (confirm("Are you sure you want to logout?")) {
-        localStorage.removeItem('telegram_user');
-        showTelegramWidget();
-        currentPage = 1;
-        searchVideos(searchBox.value.trim(), currentPage);
+      if (user && user.id) {
+        // Store user data
+        localStorage.setItem('telegram_user', JSON.stringify(user));
+        
+        // Update UI immediately
+        const container = document.getElementById('telegram-login-container');
+        container.innerHTML = `
+          <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+            ✅ Logged in as ${user.first_name} (${user.id})
+            <button onclick="location.reload()">Logout</button>
+          </div>
+        `;
+        
+        // Refresh search results if needed
+        if (searchBox.value.trim()) {
+          searchVideos(searchBox.value.trim(), currentPage);
+        }
       }
     }
+    window.onTelegramAuth = onTelegramAuth;  // Make it globally accessible
 
+    // Check login state on page load
     document.addEventListener('DOMContentLoaded', function() {
       const userData = localStorage.getItem('telegram_user');
       if (userData) {
-        try {
-          const user = JSON.parse(userData);
-          window.onTelegramAuth(user);
-        } catch (e) {
-          localStorage.removeItem('telegram_user');
-          showTelegramWidget();
-        }
-      } else {
-        showTelegramWidget();
+        const user = JSON.parse(userData);
+        onTelegramAuth(user);
       }
     });
 
