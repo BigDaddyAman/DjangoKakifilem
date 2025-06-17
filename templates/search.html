@@ -40,10 +40,8 @@
                 src="https://telegram.org/js/telegram-widget.js?22" 
                 data-telegram-login="KakifilemBot"
                 data-size="large"
-                data-userpic="false"
-                data-auth-url="https://bot.kakifilem.com/auth"
-                data-request-access="write"
-                onload="checkLoginState()">
+                data-onauth="onTelegramAuth(user)"
+                data-request-access="write">
             </script>
         </div>
 
@@ -53,71 +51,61 @@
     </div>
 
     <script>
-        // Initialize login check
-        function checkLoginState() {
-            const user = localStorage.getItem('telegram_user');
-            if (user) {
-                const userData = JSON.parse(user);
-                showLoggedInState(userData);
-            }
-        }
-
-        // Show logged in state
-        function showLoggedInState(user) {
+        // Simplify the login handling
+        function onTelegramAuth(user) {
+            console.log("Auth success:", user);
+            localStorage.setItem('telegram_user', JSON.stringify(user));
+            // Show logged in state
             const container = document.getElementById('telegram-login-container');
             container.innerHTML = `
-                <div class="login-status">
-                    <p>✅ Logged in as ${user.first_name}</p>
+                <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+                    ✅ Logged in as ${user.first_name}
                     <button onclick="handleLogout()">Logout</button>
                 </div>
             `;
-        }
-
-        // Handle login callback
-        window.onTelegramAuth = function(user) {
-            localStorage.setItem('telegram_user', JSON.stringify(user));
-            showLoggedInState(user);
-            // Refresh search if there's a query
+            // Refresh search results if any
             if (searchBox.value.trim()) {
                 searchVideos(searchBox.value.trim(), currentPage);
             }
-        };
+        }
 
-        // Handle logout
         function handleLogout() {
             localStorage.removeItem('telegram_user');
-            location.reload(); // Reload to show login widget
+            location.reload();
+        }
+
+        // Update searchVideos to properly send telegram_id
+        async function searchVideos(query, page) {
+            try {
+                const userData = localStorage.getItem('telegram_user');
+                const user = userData ? JSON.parse(userData) : null;
+                const telegram_id = user ? user.id : null;
+                
+                console.log("Searching with user:", telegram_id); // Debug log
+                
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`);
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsDiv.innerHTML = 'Error performing search';
+            }
         }
 
         // Check login state on page load
-        document.addEventListener('DOMContentLoaded', checkLoginState);
+        document.addEventListener('DOMContentLoaded', () => {
+            const userData = localStorage.getItem('telegram_user');
+            if (userData) {
+                const user = JSON.parse(userData);
+                onTelegramAuth(user);
+            }
+        });
 
         const searchBox = document.getElementById('searchBox');
         const resultsDiv = document.getElementById('results');
         const paginationDiv = document.getElementById('pagination');
         let currentPage = 1;
         const perPage = 10;
-
-        async function searchVideos(query, page) {
-            try {
-                const user = localStorage.getItem('telegram_user');
-                const telegram_id = user ? JSON.parse(user).id : null;
-                
-                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`);
-                const data = await response.json();
-                
-                if (data.is_premium) {
-                    // Show premium UI
-                    displayPremiumResults(data);
-                } else {
-                    // Show regular UI
-                    displayResults(data);
-                }
-            } catch (error) {
-                console.error('Search error:', error);
-                resultsDiv.innerHTML = 'Error performing search';
-            }
-        }
 
         async function displayResults(data) {
             resultsDiv.innerHTML = '';
