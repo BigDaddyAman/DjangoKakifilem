@@ -34,12 +34,36 @@
 </head>
 <body>
     <div class="search-container">
-        <!-- Telegram Login Widget -->
-        <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                data-telegram-login="KakifilemBot" 
-                data-size="large" 
-                data-auth-url="/auth"
-                data-request-access="write"></script>
+        <!-- Update Telegram Login Widget with proper initialization -->
+        <script async src="https://telegram.org/js/telegram-widget.js?22"></script>
+        <div id="telegram-login">
+            <script>
+                window.TelegramLoginWidget = {
+                    dataOnauth: function(user) {
+                        localStorage.setItem('telegram_user', JSON.stringify(user));
+                    },
+                    getUserInfo: async function() {
+                        const userData = localStorage.getItem('telegram_user');
+                        return userData ? JSON.parse(userData) : null;
+                    }
+                };
+
+                // Initialize Telegram Login Widget
+                function initTelegramLogin() {
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.src = "https://telegram.org/js/telegram-widget.js?22";
+                    script.setAttribute('data-telegram-login', 'KakifilemBot');
+                    script.setAttribute('data-size', 'large');
+                    script.setAttribute('data-onauth', 'TelegramLoginWidget.dataOnauth(user)');
+                    script.setAttribute('data-request-access', 'write');
+                    document.getElementById('telegram-login').appendChild(script);
+                }
+
+                // Call initialization
+                initTelegramLogin();
+            </script>
+        </div>
 
         <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
         <div id="results"></div>
@@ -55,6 +79,7 @@
 
         async function searchVideos(query, page) {
             try {
+                // Get user info from localStorage instead of direct widget access
                 const telegramUser = await TelegramLoginWidget.getUserInfo();
                 const telegram_id = telegramUser ? telegramUser.id : null;
                 
