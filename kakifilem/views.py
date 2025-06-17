@@ -221,8 +221,14 @@ def search_videos(request):
     per_page = 10
 
     try:
-        # Convert telegram_id to int if it exists, otherwise keep as None
-        user_id = int(telegram_id) if telegram_id else None
+        # Fix: Better handling of telegram_id
+        user_id = None
+        if telegram_id and telegram_id.lower() != 'null':
+            try:
+                user_id = int(telegram_id)
+            except (TypeError, ValueError):
+                logger.warning(f"Invalid telegram_id received: {telegram_id}")
+                user_id = None
         
         total_count, videos = get_videos_by_name(query, page, per_page)
         results = []
