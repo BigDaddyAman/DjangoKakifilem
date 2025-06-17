@@ -34,15 +34,24 @@
 </head>
 <body>
   <div class="search-container">
-    <div id="telegram-login-container"></div>
+    <div id="telegram-login-container">
+      <script 
+        async 
+        src="https://telegram.org/js/telegram-widget.js?22" 
+        data-telegram-login="KakifilemBot"
+        data-size="large"
+        data-onauth="onTelegramAuth(user)"
+        data-request-access="write">
+      </script>
+    </div>
     <input type="text" id="searchBox" class="search-box" placeholder="Search videos...">
     <div id="results"></div>
     <div id="pagination" class="pagination"></div>
   </div>
 
   <script>
-    console.log("Script initialized");
-    console.log("Domain:", window.location.hostname);
+    console.log("Current host:", window.location.hostname);
+    console.log("Loading search page...");
 
     const searchBox = document.getElementById('searchBox');
     const resultsDiv = document.getElementById('results');
@@ -50,80 +59,64 @@
     let currentPage = 1;
     const perPage = 10;
 
-    // Initialize login widget
-    function initTelegramWidget() {
+    function onTelegramAuth(user) {
+      console.log("Received auth:", user);
+      
+      if (!user || !user.id) {
+        console.error("Invalid user data received");
+        return;
+      }
+
+      try {
+        const authData = {
+          user: user,
+          timestamp: new Date().getTime()
+        };
+        localStorage.setItem('telegram_auth', JSON.stringify(authData));
+        
+        showLoggedInState(user);
+        
+        if (searchBox.value.trim()) {
+          searchVideos(searchBox.value.trim(), 1);
+        }
+      } catch (e) {
+        console.error("Error saving auth:", e);
+      }
+    }
+
+    function showLoggedInState(user) {
       const container = document.getElementById('telegram-login-container');
       container.innerHTML = `
-        <script 
-          async 
-          src="https://telegram.org/js/telegram-widget.js?22" 
-          data-telegram-login="KakifilemBot"
-          data-size="large"
-          data-radius="8"
-          data-onauth="window.onTelegramAuth(user)">
-        <\/script>
+        <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+          ✅ Logged in as ${user.first_name}
+          <button onclick="handleLogout()" style="margin-left: 10px;">Logout</button>
+        </div>
       `;
     }
 
-    // Global auth handler with immediate UI update
-    window.onTelegramAuth = function(user) {
-      console.log("Auth callback received:", user);
-      if (user && user.id) {
-        // Store user data
-        localStorage.setItem('telegram_user', JSON.stringify(user));
-        
-        // Update UI immediately without reload
-        const container = document.getElementById('telegram-login-container');
-        container.innerHTML = `
-          <div style="margin-bottom: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
-            ✅ Logged in as ${user.first_name} (${user.id})
-            <button onclick="handleLogout()">Logout</button>
-          </div>
-        `;
-
-        // Force refresh search results
-        if (searchBox.value.trim()) {
-          searchVideos(searchBox.value.trim(), currentPage);
-        }
-      }
-    };
-
     function handleLogout() {
-      localStorage.removeItem('telegram_user');
-      initTelegramWidget();
-      if (searchBox.value.trim()) {
-        searchVideos(searchBox.value.trim(), currentPage);
-      }
+      localStorage.removeItem('telegram_auth');
+      location.reload();
     }
-
-    // Check login state on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log("Page loaded, checking auth state");
-      const userData = localStorage.getItem('telegram_user');
-      if (userData) {
-        try {
-          const user = JSON.parse(userData);
-          console.log("Found stored user data:", user);
-          window.onTelegramAuth(user);
-        } catch (e) {
-          console.error("Error parsing stored user data:", e);
-          localStorage.removeItem('telegram_user');
-          initTelegramWidget();
-        }
-      } else {
-        console.log("No stored user data found");
-        initTelegramWidget();
-      }
-    });
 
     async function searchVideos(query, page) {
       try {
-        const userData = localStorage.getItem('telegram_user');
-        const user = userData ? JSON.parse(userData) : null;
-        const telegram_id = user ? user.id : null;
+        const authData = localStorage.getItem('telegram_auth');
+        let telegram_id = null;
 
-        console.log("Search request:", { query, page, telegram_id });
+        if (authData) {
+          const { user, timestamp } = JSON.parse(authData);
+          if (new Date().getTime() - timestamp < 24 * 60 * 60 * 1000) {
+            telegram_id = user.id;
+          } else {
+            localStorage.removeItem('telegram_auth');
+            location.reload();
+            return;
+          }
+        }
 
+        console.log("Searching with ID:", telegram_id);
+        
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=${page}&telegram_id=${telegram_id}`);
         const data = await response.json();
         displayResults(data);
@@ -140,8 +133,8 @@
         return;
       }
 
-      const userData = localStorage.getItem('telegram_user');
-      const loggedIn = !!userData;
+      const authData = localStorage.getItem('telegram_auth');
+      const loggedIn = !!authData;
 
       data.results.forEach(video => {
         const div = document.createElement('div');
@@ -193,21 +186,21 @@
     }
 
     function getVideo(token) {
-      const userData = localStorage.getItem('telegram_user');
-      if (!userData) {
+      const authData = localStorage.getItem('telegram_auth');
+      if (!authData) {
         alert('Please login with Telegram first');
         return;
       }
 
       try {
-        const user = JSON.parse(userData);
+        const { user } = JSON.parse(authData);
         if (!user || !user.id) throw new Error('Invalid user data');
         window.location.href = `/countdown?token=${token}&telegram_id=${user.id}`;
       } catch (e) {
         console.error('Login error:', e);
-        localStorage.removeItem('telegram_user');
+        localStorage.removeItem('telegram_auth');
         alert('Please login with Telegram first');
-        initTelegramWidget();
+        location.reload();
       }
     }
 
@@ -241,6 +234,24 @@
         timeout = setTimeout(later, wait);
       };
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const authData = localStorage.getItem('telegram_auth');
+      if (authData) {
+        try {
+          const { user, timestamp } = JSON.parse(authData);
+          if (new Date().getTime() - timestamp < 24 * 60 * 60 * 1000) {
+            showLoggedInState(user);
+          } else {
+            localStorage.removeItem('telegram_auth');
+            location.reload();
+          }
+        } catch (e) {
+          console.error("Error loading auth:", e);
+          localStorage.removeItem('telegram_auth');
+        }
+      }
+    });
   </script>
 </body>
 </html>
