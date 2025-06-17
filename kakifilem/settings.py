@@ -39,8 +39,9 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
-# Add this near your other settings
+# Bot settings
 BOT_API_URL = os.getenv('BOT_API_URL', 'https://kakifilembot-production.up.railway.app')
+TELEGRAM_BOT_USERNAME = 'kakifilembot'  # Without @ symbol
 
 
 # Application definition

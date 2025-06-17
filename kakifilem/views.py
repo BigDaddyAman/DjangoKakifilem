@@ -1,10 +1,14 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 import psycopg2
 import logging
 import os
 import redis
 import json
+import hashlib
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -90,3 +94,47 @@ def expand_short_url(request, code):
     except Exception as e:
         logger.error(f"Error expanding URL: {e}")
         return redirect('/')
+
+@csrf_exempt
+def search_videos(request):
+    """API endpoint for searching videos"""
+    query = request.GET.get('q', '')
+    page = int(request.GET.get('page', 1))
+    per_page = 10
+
+    try:
+        # Connect to database
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        # Get total count and paginated results
+        total_count, videos = get_videos_by_name(query, page, per_page)
+
+        # Format results
+        results = []
+        for video in videos:
+            # Generate token for video
+            token = hashlib.sha256(f"{video[0]}:{datetime.now()}".encode()).hexdigest()[:32]
+            
+            # Save token
+            save_token(video[0], request.user.id if request.user.is_authenticated else None, token)
+
+            results.append({
+                'name': video[1],
+                'size': video[4],
+                'token': token
+            })
+
+        return JsonResponse({
+            'total': total_count,
+            'page': page,
+            'results': results
+        })
+
+    except Exception as e:
+        logger.error(f"Search error: {e}")
+        return JsonResponse({'error': 'Search failed'}, status=500)
+
+def search_page(request):
+    """Render search page"""
+    return render(request, 'search.html')
