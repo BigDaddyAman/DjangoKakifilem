@@ -96,31 +96,33 @@ def expand_short_url(request, code):
 def miniapps(request):
     """Handle mini-apps page"""
     try:
-        # Get user_id from query params
+        # Get user_id from query params and validate
         user_id = request.GET.get('user_id')
+        action = request.GET.get('action', 'bug')  # Default to bug page if no action
         
-        # Better validation
+        # Debug logging
+        logging.info(f"Miniapps request - User ID: {user_id}, Action: {action}")
+        logging.info(f"All params: {request.GET}")
+        
         if not user_id:
             return render(request, 'miniapps.html', {
-                'error': 'Missing user ID parameter',
+                'error': 'Missing user ID parameter. Please use the bot command /miniapps to access this page.',
                 'action': 'error'
             })
             
         try:
-            user_id = int(user_id)  # Try converting to int
-            if user_id <= 0:
-                raise ValueError("Invalid user ID")
+            user_id = int(user_id)
         except (TypeError, ValueError):
             return render(request, 'miniapps.html', {
-                'error': 'Invalid user ID format',
+                'error': 'Invalid user ID format. Please use the bot command /miniapps to access this page.',
                 'action': 'error'
             })
-        
-        action = request.GET.get('action', 'bug')
-        
+
+        # Rest of your view logic...
         conn = None
         cur = None
         try:
+            # Get database connection
             db_settings = settings.DATABASES['default']
             conn = psycopg2.connect(
                 dbname=db_settings['NAME'],
@@ -133,7 +135,7 @@ def miniapps(request):
             
             data = {}
             
-            # Get premium status for user
+            # Get premium status
             cur.execute("""
                 SELECT start_date, expiry_date 
                 FROM premium_users 
@@ -142,10 +144,8 @@ def miniapps(request):
             premium_status = cur.fetchone()
             
             if premium_status:
-                # Calculate days remaining
                 expiry_date = premium_status[1]
                 days_remaining = (expiry_date - datetime.now()).days
-                
                 data['premium'] = {
                     'active': True,
                     'days_remaining': days_remaining,
@@ -155,47 +155,17 @@ def miniapps(request):
             else:
                 data['premium'] = {'active': False}
             
-            # Get other data based on action
-            if action == 'request':
-                # Get user's pending requests
-                cur.execute("""
-                    SELECT movie_name, additional_info, status, created_at 
-                    FROM movie_requests 
-                    WHERE user_id = %s 
-                    ORDER BY created_at DESC LIMIT 5
-                """, (user_id,))
-                data['requests'] = cur.fetchall()
-                
-            elif action == 'bug':
-                # Get user's bug reports
-                cur.execute("""
-                    SELECT title, description, status, created_at 
-                    FROM bug_reports 
-                    WHERE user_id = %s 
-                    ORDER BY created_at DESC LIMIT 5
-                """, (user_id,))
-                data['bugs'] = cur.fetchall()
-                
-            elif action == 'report':
-                # Get user's video reports
-                cur.execute("""
-                    SELECT video_id, reason, status, created_at 
-                    FROM video_reports 
-                    WHERE user_id = %s 
-                    ORDER BY created_at DESC LIMIT 5
-                """, (user_id,))
-                data['reports'] = cur.fetchall()
-                
             context = {
                 'user_id': user_id,
                 'action': action,
-                'data': data,
-                'is_premium': bool(premium_status)  # Add premium flag
+                'data': data
             }
+            
+            logging.info(f"Rendering miniapps with context: {context}")
             return render(request, 'miniapps.html', context)
             
         except Exception as e:
-            logger.error(f"Error in miniapps view: {e}")
+            logging.error(f"Database error in miniapps view: {e}")
             return render(request, 'miniapps.html', {
                 'error': 'Database error occurred',
                 'action': action,
@@ -206,11 +176,12 @@ def miniapps(request):
                 cur.close()
             if conn:
                 conn.close()
+                
     except Exception as e:
-        logger.error(f"Error in miniapps view: {e}")
+        logging.error(f"Error in miniapps view: {e}")
         return render(request, 'miniapps.html', {
             'error': 'An error occurred',
-            'action': 'bug'
+            'action': 'error'
         })
 
 async def handle_miniapps_submit(request):
