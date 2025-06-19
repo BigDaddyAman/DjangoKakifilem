@@ -93,59 +93,49 @@ def expand_short_url(request, code):
 
 def miniapps(request):
     """Handle mini-apps page"""
-    # Change bot domain check to www domain
-    if request.get_host() != 'www.kakifilem.com':
-        return redirect('https://www.kakifilem.com/miniapps/')
-        
-    user_id = request.GET.get('user_id')
-    action = request.GET.get('action')
-    
-    conn = None
-    cur = None
     try:
-        db_settings = settings.DATABASES['default']
-        conn = psycopg2.connect(
-            dbname=db_settings['NAME'],
-            user=db_settings['USER'],
-            password=db_settings['PASSWORD'],
-            host=db_settings['HOST'],
-            port=db_settings['PORT']
-        )
-        cur = conn.cursor()
+        user_id = request.GET.get('user_id')
+        action = request.GET.get('action', 'bug')  # Default to bug report if no action
         
-        data = {}
-        
-        if action == 'premium':
-            cur.execute("""
-                SELECT start_date, expiry_date 
-                FROM premium_users 
-                WHERE user_id = %s AND expiry_date > NOW()
-            """, (user_id,))
-            premium = cur.fetchone()
-            data['premium'] = premium
+        conn = None
+        cur = None
+        try:
+            db_settings = settings.DATABASES['default']
+            conn = psycopg2.connect(
+                dbname=db_settings['NAME'],
+                user=db_settings['USER'],
+                password=db_settings['PASSWORD'],
+                host=db_settings['HOST'],
+                port=db_settings['PORT']
+            )
+            cur = conn.cursor()
             
-        elif action == 'news':
-            cur.execute("""
-                SELECT content, created_at 
-                FROM bot_news 
-                ORDER BY created_at DESC 
-                LIMIT 5
-            """)
-            news = cur.fetchall()
-            data['news'] = news
+            data = {}
             
-        context = {
-            'user_id': user_id,
-            'action': action,
-            'data': data
-        }
-        return render(request, 'miniapps.html', context)
-        
+            if action == 'premium':
+                cur.execute("""
+                    SELECT start_date, expiry_date 
+                    FROM premium_users 
+                    WHERE user_id = %s AND expiry_date > NOW()
+                """, (user_id,))
+                premium = cur.fetchone()
+                data['premium'] = premium
+                
+            context = {
+                'user_id': user_id,
+                'action': action,
+                'data': data
+            }
+            return render(request, 'miniapps.html', context)
+            
+        except Exception as e:
+            logger.error(f"Error in miniapps view: {e}")
+            return render(request, 'miniapps.html', {'error': str(e)})
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
     except Exception as e:
         logger.error(f"Error in miniapps view: {e}")
         return render(request, 'miniapps.html', {'error': str(e)})
-    finally:
-        if cur:
-            cur.close()
-        if conn:
-            conn.close()

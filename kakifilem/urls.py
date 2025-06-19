@@ -24,6 +24,10 @@ urlpatterns = [
     # Main site URLs (www.kakifilem.com)
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
     
+    # Add miniapps URL pattern
+    path('miniapps/', views.miniapps, name='miniapps'),
+    path('miniapps', RedirectView.as_view(url='/miniapps/')), # Handle no trailing slash
+
     # Fix contact URL - add both versions
     path('contact', TemplateView.as_view(template_name='contact.html'), name='contact-no-slash'),
     path('contact/', TemplateView.as_view(template_name='contact.html'), name='contact'),
