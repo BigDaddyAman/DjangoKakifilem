@@ -60,6 +60,9 @@ urlpatterns = [
 
     # Add API endpoint for miniapps form submissions
     path('api/miniapps/', views.handle_miniapps_submit, name='miniapps-submit'),
+
+    # Add API endpoint for admin actions
+    path('api/admin/action/', views.handle_admin_action, name='admin-action'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Add custom error handlers

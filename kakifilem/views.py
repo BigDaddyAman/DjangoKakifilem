@@ -96,7 +96,6 @@ def expand_short_url(request, code):
 def miniapps(request):
     """Handle mini-apps page"""
     try:
-        # Get user_id from query params and convert to integer
         user_id = request.GET.get('user_id')
         action = request.GET.get('action', 'bug')
         
@@ -123,7 +122,37 @@ def miniapps(request):
                     )
                     cur = conn.cursor()
 
-                    # Fixed query with proper type casting and timezone handling
+                    # Check if user is admin
+                    cur.execute("""
+                        SELECT EXISTS(
+                            SELECT 1 FROM UNNEST(ARRAY[7951420571, 1509468839]) AS admin_id 
+                            WHERE admin_id = %s
+                        )
+                    """, (user_id,))
+                    is_admin = cur.fetchone()[0]
+
+                    data = {}
+
+                    if is_admin:
+                        # Get pending reports/requests for admin
+                        cur.execute("""
+                            SELECT 'bug' as type, id, title, description, created_at, user_id 
+                            FROM bug_reports WHERE status = 'pending'
+                            UNION ALL
+                            SELECT 'request' as type, id, movie_name, additional_info, created_at, user_id 
+                            FROM movie_requests WHERE status = 'pending'
+                            UNION ALL
+                            SELECT 'report' as type, id, video_id, reason, created_at, user_id 
+                            FROM video_reports WHERE status = 'pending'
+                            ORDER BY created_at DESC
+                        """)
+                        pending_items = cur.fetchall()
+                        data['admin'] = {
+                            'is_admin': True,
+                            'pending_items': pending_items
+                        }
+
+                    # Fixed query to properly check premium status
                     cur.execute("""
                         SELECT start_date, expiry_date 
                         FROM premium_users 
@@ -131,10 +160,9 @@ def miniapps(request):
                         AND expiry_date > NOW() AT TIME ZONE 'UTC'
                         ORDER BY expiry_date DESC
                         LIMIT 1
-                    """, (user_id,))  # Now user_id is properly an integer
+                    """, (user_id,))
                     
                     premium_status = cur.fetchone()
-                    data = {}
                     
                     if premium_status:
                         expiry_date = premium_status[1]
@@ -142,8 +170,8 @@ def miniapps(request):
                         data['premium'] = {
                             'active': True,
                             'days_remaining': days_remaining,
-                            'expiry_date': expiry_date,
-                            'start_date': premium_status[0]
+                            'expiry_date': expiry_date.strftime('%Y-%m-%d %H:%M:%S'),
+                            'start_date': premium_status[0].strftime('%Y-%m-%d %H:%M:%S')
                         }
                         logging.info(f"Found premium status for user {user_id}")
                     else:
@@ -159,17 +187,16 @@ def miniapps(request):
                         cur.close()
                     if conn:
                         conn.close()
-                        
             except ValueError:
                 logging.error(f"Invalid user_id format: {user_id}")
                 context['data'] = {'premium': {'active': False}}
 
         return render(request, 'miniapps.html', context)
-
+        
     except Exception as e:
         logging.error(f"Error in miniapps view: {e}")
         return render(request, 'miniapps.html', {
-            'error': 'An error occurred',
+            'error': 'Please use the bot command /miniapps to access this page',
             'action': 'error'
         })
 
@@ -229,4 +256,68 @@ async def handle_miniapps_submit(request):
                 
     except Exception as e:
         logger.error(f"Error processing form: {e}")
+        return JsonResponse({'status': 'error', 'message': str(e)})
+
+# Add new admin handler
+async def handle_admin_action(request):
+    """Handle admin actions on reports/requests"""
+    try:
+        data = await request.json()
+        item_type = data.get('type')
+        item_id = data.get('id')
+        action = data.get('action')  # 'approve' or 'reject'
+        user_id = data.get('user_id')
+
+        # Verify admin status
+        conn = None
+        cur = None
+        try:
+            db_settings = settings.DATABASES['default']
+            conn = psycopg2.connect(
+                dbname=db_settings['NAME'],
+                user=db_settings['USER'],
+                password=db_settings['PASSWORD'],
+                host=db_settings['HOST'],
+                port=db_settings['PORT']
+            )
+            cur = conn.cursor()
+            
+            # Update status based on action
+            if item_type == 'bug':
+                cur.execute("""
+                    UPDATE bug_reports 
+                    SET status = %s, 
+                        completed_at = NOW() 
+                    WHERE id = %s
+                """, (action, item_id))
+            elif item_type == 'request':
+                cur.execute("""
+                    UPDATE movie_requests 
+                    SET status = %s, 
+                        completed_at = NOW() 
+                    WHERE id = %s
+                """, (action, item_id))
+            elif item_type == 'report':
+                cur.execute("""
+                    UPDATE video_reports 
+                    SET status = %s, 
+                        completed_at = NOW() 
+                    WHERE id = %s
+                """, (action, item_id))
+                
+            conn.commit()
+            return JsonResponse({'status': 'success'})
+            
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error in admin action: {e}")
+            return JsonResponse({'status': 'error', 'message': str(e)})
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+                
+    except Exception as e:
+        logger.error(f"Error processing admin action: {e}")
         return JsonResponse({'status': 'error', 'message': str(e)})

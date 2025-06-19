@@ -118,6 +118,52 @@
             border-top: 1px solid #eee;
             color: #666;
         }
+        .admin-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .item-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .item-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1976D2;
+        }
+        
+        .item-content {
+            margin-bottom: 15px;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .approve-btn {
+            background: #4CAF50;
+        }
+        
+        .reject-btn {
+            background: #f44336;
+        }
+        
+        .approve-btn, .reject-btn {
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -195,6 +241,48 @@
             </a>
             <a href="?user_id={{ user_id }}&action=contact" class="nav-button {% if action == 'contact' %}active{% endif %}">📧 Contact Us</a>
         </div>
+
+        <!-- Admin Section -->
+        {% if data.admin and data.admin.is_admin %}
+            <div class="admin-section">
+                <h2>🔐 Admin Panel</h2>
+                
+                {% if data.admin.pending_items %}
+                    <div class="pending-items">
+                        {% for item in data.admin.pending_items %}
+                            <div class="item-card">
+                                <div class="item-header">
+                                    {% if item.0 == 'bug' %}
+                                        🐛 Bug Report
+                                    {% elif item.0 == 'request' %}
+                                        📝 Movie Request
+                                    {% else %}
+                                        ⚠️ Video Report
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="item-content">
+                                    <p><strong>ID:</strong> #{{ item.1 }}</p>
+                                    <p><strong>Title:</strong> {{ item.2 }}</p>
+                                    <p><strong>Details:</strong> {{ item.3 }}</p>
+                                    <p><strong>User ID:</strong> {{ item.5 }}</p>
+                                    <p><strong>Submitted:</strong> {{ item.4|date:"Y-m-d H:i" }}</p>
+                                </div>
+                                
+                                <div class="item-actions">
+                                    <button onclick="handleAdminAction('{{ item.0 }}', '{{ item.1 }}', 'approve')" 
+                                            class="approve-btn">✅ Approve</button>
+                                            <button onclick="handleAdminAction('{{ item.0 }}', '{{ item.1 }}', 'reject')" 
+                                            class="reject-btn">❌ Reject</button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No pending items to review</p>
+                {% endif %}
+            </div>
+        {% endif %}
 
         <!-- Forms Section -->
         {% if action == 'bug' %}
@@ -337,6 +425,36 @@
                 }
             };
         });
+
+        async function handleAdminAction(type, id, action) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const user_id = urlParams.get('user_id');
+            
+            try {
+                const response = await fetch('/api/admin/action/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: type,
+                        id: id,
+                        action: action,
+                        user_id: user_id
+                    })
+                });
+                
+                if (response.ok) {
+                    webapp.showAlert('Action completed successfully');
+                    // Refresh the page to update the list
+                    window.location.reload();
+                } else {
+                    webapp.showAlert('Error processing action');
+                }
+            } catch (error) {
+                webapp.showAlert('Error processing action');
+            }
+        }
     </script>
 </body>
 </html>
