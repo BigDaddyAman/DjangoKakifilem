@@ -95,8 +95,16 @@ def expand_short_url(request, code):
 def miniapps(request):
     """Handle mini-apps page"""
     try:
+        # Get and validate user_id
         user_id = request.GET.get('user_id')
-        action = request.GET.get('action', 'bug')  # Default to bug report if no action
+        if not user_id or not user_id.isdigit():
+            return render(request, 'miniapps.html', {
+                'error': 'Invalid or missing user ID',
+                'action': 'bug'
+            })
+            
+        user_id = int(user_id)  # Convert to integer
+        action = request.GET.get('action', 'bug')
         
         conn = None
         cur = None
@@ -114,7 +122,7 @@ def miniapps(request):
             data = {}
             
             if action == 'premium':
-                # Get premium status
+                # Get premium status with validated user_id
                 cur.execute("""
                     SELECT start_date, expiry_date 
                     FROM premium_users 
@@ -162,7 +170,11 @@ def miniapps(request):
             
         except Exception as e:
             logger.error(f"Error in miniapps view: {e}")
-            return render(request, 'miniapps.html', {'error': str(e)})
+            return render(request, 'miniapps.html', {
+                'error': 'Database error occurred',
+                'action': action,
+                'user_id': user_id
+            })
         finally:
             if cur:
                 cur.close()
@@ -170,7 +182,10 @@ def miniapps(request):
                 conn.close()
     except Exception as e:
         logger.error(f"Error in miniapps view: {e}")
-        return render(request, 'miniapps.html', {'error': str(e)})
+        return render(request, 'miniapps.html', {
+            'error': 'An error occurred',
+            'action': 'bug'
+        })
 
 async def handle_miniapps_submit(request):
     """Handle mini-apps form submissions"""
