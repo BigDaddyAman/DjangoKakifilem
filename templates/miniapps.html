@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KakiFilem Mini Apps</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], 
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        .premium-info {
+            background: #E3F2FD;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .news-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+        .success {
+            color: green;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if action == 'bug' %}
+            <h2>🐛 Report a Bug</h2>
+            <form id="bugForm" method="post">
+                <div class="form-group">
+                    <label for="title">Bug Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4" required></textarea>
+                </div>
+                <button type="submit">Submit Report</button>
+            </form>
+
+        {% elif action == 'request' %}
+            <h2>📝 Request a Movie</h2>
+            <form id="requestForm" method="post">
+                <div class="form-group">
+                    <label for="movieName">Movie Name</label>
+                    <input type="text" id="movieName" name="movieName" required>
+                </div>
+                <div class="form-group">
+                    <label for="additionalInfo">Additional Information</label>
+                    <textarea id="additionalInfo" name="additionalInfo" rows="4"></textarea>
+                </div>
+                <button type="submit">Submit Request</button>
+            </form>
+
+        {% elif action == 'premium' %}
+            <h2>💎 Premium Status</h2>
+            {% if data.premium %}
+                <div class="premium-info">
+                    <p>✅ Premium Active</p>
+                    <p>Start Date: {{ data.premium.0|date:"d M Y" }}</p>
+                    <p>Expiry Date: {{ data.premium.1|date:"d M Y" }}</p>
+                </div>
+            {% else %}
+                <p>❌ You are not a premium user</p>
+                <p>Contact @kakifilemadminbot to get premium access!</p>
+            {% endif %}
+
+        {% elif action == 'news' %}
+            <h2>📢 Bot News</h2>
+            {% if data.news %}
+                {% for news in data.news %}
+                    <div class="news-item">
+                        <p><strong>{{ news.0 }}</strong></p>
+                        <p>{{ news.1|date:"d M Y H:i" }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No news at the moment.</p>
+            {% endif %}
+
+        {% elif action == 'report' %}
+            <h2>⚠️ Report Video</h2>
+            <form id="reportForm" method="post">
+                <div class="form-group">
+                    <label for="videoId">Video Link/ID</label>
+                    <input type="text" id="videoId" name="videoId" required>
+                </div>
+                <div class="form-group">
+                    <label for="reason">Reason for Report</label>
+                    <textarea id="reason" name="reason" rows="4" required></textarea>
+                </div>
+                <button type="submit">Submit Report</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        const webapp = window.Telegram.WebApp;
+        webapp.expand();
+        
+        // Handle form submissions
+        document.querySelectorAll('form').forEach(form => {
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                
+                try {
+                    const response = await fetch('/api/miniapps/', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: '{{ action }}',
+                            user_id: '{{ user_id }}',
+                            data: Object.fromEntries(formData)
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        webapp.showAlert('Successfully submitted!');
+                        form.reset();
+                    } else {
+                        webapp.showAlert('Error submitting form. Please try again.');
+                    }
+                } catch (error) {
+                    webapp.showAlert('Error submitting form. Please try again.');
+                }
+            };
+        });
+    </script>
+</body>
+</html>

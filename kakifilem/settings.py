@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'shortener',  # Add this
+    'miniapps',   # Add this
 ]
 
 MIDDLEWARE = [
