@@ -181,7 +181,7 @@
             <a href="?user_id={{ user_id }}&action=request" class="nav-button {% if action == 'request' %}active{% endif %}">📝 Request Movie</a>
             <a href="?user_id={{ user_id }}&action=premium" class="nav-button {% if action == 'premium' %}active{% endif %}">💎 Premium Status</a>
             <a href="?user_id={{ user_id }}&action=report" class="nav-button {% if action == 'report' %}active{% endif %}">⚠️ Report Video</a>
-            <a href="mailto:contact@kakifilem.com" class="nav-button">📧 Contact Us</a>
+            <a href="?user_id={{ user_id }}&action=contact" class="nav-button {% if action == 'contact' %}active{% endif %}">📧 Contact Us</a>
         </div>
 
         <!-- Forms Section -->
@@ -241,6 +241,28 @@
                 </div>
                 <button type="submit">Submit Report</button>
             </form>
+
+        {% elif action == 'contact' %}
+            <h2>📧 Contact & Copyright</h2>
+            <div class="contact-info" style="padding: 20px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
+                <h3>Copyright Compliance</h3>
+                <p>Kakifilem respects intellectual property rights and is committed to addressing copyright violations.</p>
+                
+                <h4>For Copyright Owners:</h4>
+                <p>If you are a copyright owner and believe that a link on our platform infringes your rights:</p>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li>✉️ Send a formal notice to <a href="mailto:contact@kakifilem.com">contact@kakifilem.com</a></li>
+                    <li>📝 Include clear details such as the URL(s) in question and proof of ownership</li>
+                </ul>
+                
+                <p>We will review your request promptly and take appropriate action, including removing infringing links if necessary.</p>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="mailto:contact@kakifilem.com" class="nav-button" style="display: inline-block; margin-top: 10px;">
+                        ✉️ Email Us
+                    </a>
+                </div>
+            </div>
         {% endif %}
         <footer>
             © Kakifilem 2025
