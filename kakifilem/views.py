@@ -6,6 +6,7 @@ import os
 import redis
 import json
 from django.http import JsonResponse
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -95,15 +96,26 @@ def expand_short_url(request, code):
 def miniapps(request):
     """Handle mini-apps page"""
     try:
-        # Get and validate user_id
+        # Get user_id from query params
         user_id = request.GET.get('user_id')
-        if not user_id or not user_id.isdigit():
+        
+        # Better validation
+        if not user_id:
             return render(request, 'miniapps.html', {
-                'error': 'Invalid or missing user ID',
-                'action': 'bug'
+                'error': 'Missing user ID parameter',
+                'action': 'error'
             })
             
-        user_id = int(user_id)  # Convert to integer
+        try:
+            user_id = int(user_id)  # Try converting to int
+            if user_id <= 0:
+                raise ValueError("Invalid user ID")
+        except (TypeError, ValueError):
+            return render(request, 'miniapps.html', {
+                'error': 'Invalid user ID format',
+                'action': 'error'
+            })
+        
         action = request.GET.get('action', 'bug')
         
         conn = None
@@ -128,7 +140,20 @@ def miniapps(request):
                 WHERE user_id = %s AND expiry_date > NOW()
             """, (user_id,))
             premium_status = cur.fetchone()
-            data['premium'] = premium_status
+            
+            if premium_status:
+                # Calculate days remaining
+                expiry_date = premium_status[1]
+                days_remaining = (expiry_date - datetime.now()).days
+                
+                data['premium'] = {
+                    'active': True,
+                    'days_remaining': days_remaining,
+                    'expiry_date': expiry_date,
+                    'start_date': premium_status[0]
+                }
+            else:
+                data['premium'] = {'active': False}
             
             # Get other data based on action
             if action == 'request':
@@ -199,6 +224,7 @@ async def handle_miniapps_submit(request):
         conn = None
         cur = None
         try:
+            # Get database connection
             db_settings = settings.DATABASES['default']
             conn = psycopg2.connect(
                 dbname=db_settings['NAME'],
@@ -210,12 +236,14 @@ async def handle_miniapps_submit(request):
             cur = conn.cursor()
             
             if action == 'bug':
+                # Save bug report
                 cur.execute("""
                     INSERT INTO bug_reports (user_id, title, description)
                     VALUES (%s, %s, %s)
                 """, (user_id, form_data.get('title'), form_data.get('description')))
                 
             elif action == 'request':
+                # Save movie request
                 cur.execute("""
                     INSERT INTO movie_requests (user_id, movie_name, additional_info)
                     VALUES (%s, %s, %s)

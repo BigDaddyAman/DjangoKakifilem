@@ -215,16 +215,33 @@
 
         {% elif action == 'premium' %}
             <h2>💎 Premium Status</h2>
-            {% if data.premium %}
-                <div class="premium-info">
-                    <p>✅ Premium Active</p>
-                    <p>Start Date: {{ data.premium.0|date:"d M Y" }}</p>
-                    <p>Expiry Date: {{ data.premium.1|date:"d M Y" }}</p>
+            {% if data.premium.active %}
+                <div class="premium-info" style="background: #E3F2FD; padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-bottom: 20px;">✅ Active</h3>
+                    <p>⏳ Days remaining: {{ data.premium.days_remaining }}</p>
+                    <p>📅 Expires: {{ data.premium.expiry_date|date:"Y-m-d H:i:s" }}</p>
                 </div>
             {% else %}
-                <div class="premium-info">
-                    <p>❌ You are not a premium user</p>
-                    <p>Contact @kakifilemadminbot to get premium access!</p>
+                <div class="premium-info" style="background: #FFF3E0; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <span style="font-size: 48px;">🔒</span>
+                    </div>
+                    <h3 style="text-align: center; color: #E65100; margin-bottom: 20px;">Not a Premium User</h3>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h4 style="color: #E65100; margin-top: 0;">Why Go Premium?</h4>
+                        <ul style="list-style-type: none; padding-left: 0;">
+                            <li>💫 Direct video delivery - no website loading</li>
+                            <li>🚫 No ads or redirects</li>
+                            <li>📥 Multiple video downloads</li>
+                            <li>⭐️ Priority support access</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #FBE9E7; padding: 15px; border-radius: 6px; margin-top: 15px;">
+                        <p style="margin: 0;"><strong>💰 Price:</strong> Only RM10 for 3 months access!</p>
+                        <p style="margin-top: 10px;">Contact <a href="https://t.me/kakifilemadminbot" style="color: #E65100; text-decoration: none;">@kakifilemadminbot</a> to upgrade now!</p>
+                    </div>
                 </div>
             {% endif %}
 
