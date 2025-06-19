@@ -121,17 +121,17 @@ def miniapps(request):
             
             data = {}
             
-            if action == 'premium':
-                # Get premium status with validated user_id
-                cur.execute("""
-                    SELECT start_date, expiry_date 
-                    FROM premium_users 
-                    WHERE user_id = %s AND expiry_date > NOW()
-                """, (user_id,))
-                premium = cur.fetchone()
-                data['premium'] = premium
-                
-            elif action == 'request':
+            # Get premium status for user
+            cur.execute("""
+                SELECT start_date, expiry_date 
+                FROM premium_users 
+                WHERE user_id = %s AND expiry_date > NOW()
+            """, (user_id,))
+            premium_status = cur.fetchone()
+            data['premium'] = premium_status
+            
+            # Get other data based on action
+            if action == 'request':
                 # Get user's pending requests
                 cur.execute("""
                     SELECT movie_name, additional_info, status, created_at 
@@ -164,7 +164,8 @@ def miniapps(request):
             context = {
                 'user_id': user_id,
                 'action': action,
-                'data': data
+                'data': data,
+                'is_premium': bool(premium_status)  # Add premium flag
             }
             return render(request, 'miniapps.html', context)
             
