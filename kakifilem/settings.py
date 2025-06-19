@@ -52,8 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'shortener',  # Add this
-    'miniapps',   # Add this
 ]
 
 MIDDLEWARE = [
@@ -169,7 +167,6 @@ USE_X_FORWARDED_PORT = True
 CORS_ALLOWED_ORIGINS = [
     "https://www.kakifilem.com",
     "https://bot.kakifilem.com",
-    "https://web-production-a47d1.up.railway.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -189,9 +186,8 @@ CORS_ALLOW_HEADERS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://www.kakifilem.com",
-    "https://bot.kakifilem.com", 
-    "https://web-production-a47d1.up.railway.app"
+    'https://www.kakifilem.com',
+    'https://bot.kakifilem.com',
 ]
 
 LOGGING = {
