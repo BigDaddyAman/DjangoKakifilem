@@ -65,6 +65,41 @@
             color: green;
             margin-bottom: 10px;
         }
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .nav-button {
+            padding: 10px 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+        }
+        .nav-button:hover {
+            background: #e0e0e0;
+        }
+        .nav-button.active {
+            background: #2196F3;
+            color: white;
+        }
+        .history-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .submission-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .submission-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -73,6 +108,60 @@
             <div class="error">{{ error }}</div>
         {% endif %}
 
+        <!-- Show current user's submissions if available -->
+        {% if data.requests or data.bugs or data.reports %}
+            <div class="history-section">
+                <h3>Your Previous Submissions</h3>
+                {% if data.requests %}
+                    <div class="submissions">
+                        <h4>Movie Requests</h4>
+                        {% for request in data.requests %}
+                            <div class="submission-item">
+                                <p><strong>{{ request.0 }}</strong></p>
+                                <p>Status: {{ request.2 }}</p>
+                                <p>Submitted: {{ request.3|date:"d M Y" }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% if data.bugs %}
+                    <div class="submissions">
+                        <h4>Bug Reports</h4>
+                        {% for bug in data.bugs %}
+                            <div class="submission-item">
+                                <p><strong>{{ bug.0 }}</strong></p>
+                                <p>Status: {{ bug.2 }}</p>
+                                <p>Submitted: {{ bug.3|date:"d M Y" }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% if data.reports %}
+                    <div class="submissions">
+                        <h4>Video Reports</h4>
+                        {% for report in data.reports %}
+                            <div class="submission-item">
+                                <p><strong>Video: {{ report.0 }}</strong></p>
+                                <p>Status: {{ report.2 }}</p>
+                                <p>Submitted: {{ report.3|date:"d M Y" }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Navigation Menu -->
+        <div class="nav-menu">
+            <a href="?user_id={{ user_id }}&action=bug" class="nav-button {% if action == 'bug' %}active{% endif %}">🐛 Report Bug</a>
+            <a href="?user_id={{ user_id }}&action=request" class="nav-button {% if action == 'request' %}active{% endif %}">📝 Request Movie</a>
+            <a href="?user_id={{ user_id }}&action=premium" class="nav-button {% if action == 'premium' %}active{% endif %}">💎 Premium Status</a>
+            <a href="?user_id={{ user_id }}&action=report" class="nav-button {% if action == 'report' %}active{% endif %}">⚠️ Report Video</a>
+        </div>
+
+        <!-- Forms Section -->
         {% if action == 'bug' %}
             <h2>🐛 Report a Bug</h2>
             <form id="bugForm" method="post">
@@ -110,21 +199,10 @@
                     <p>Expiry Date: {{ data.premium.1|date:"d M Y" }}</p>
                 </div>
             {% else %}
-                <p>❌ You are not a premium user</p>
-                <p>Contact @kakifilemadminbot to get premium access!</p>
-            {% endif %}
-
-        {% elif action == 'news' %}
-            <h2>📢 Bot News</h2>
-            {% if data.news %}
-                {% for news in data.news %}
-                    <div class="news-item">
-                        <p><strong>{{ news.0 }}</strong></p>
-                        <p>{{ news.1|date:"d M Y H:i" }}</p>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No news at the moment.</p>
+                <div class="premium-info">
+                    <p>❌ You are not a premium user</p>
+                    <p>Contact @kakifilemadminbot to get premium access!</p>
+                </div>
             {% endif %}
 
         {% elif action == 'report' %}
