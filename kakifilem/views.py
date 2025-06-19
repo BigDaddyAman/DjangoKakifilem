@@ -96,7 +96,7 @@ def expand_short_url(request, code):
 def miniapps(request):
     """Handle mini-apps page"""
     try:
-        # Get user_id from query params
+        # Get user_id from query params and convert to integer
         user_id = request.GET.get('user_id')
         action = request.GET.get('action', 'bug')
         
@@ -107,55 +107,62 @@ def miniapps(request):
         }
 
         if user_id:
-            conn = None
-            cur = None
             try:
-                db_settings = settings.DATABASES['default']
-                conn = psycopg2.connect(
-                    dbname=db_settings['NAME'],
-                    user=db_settings['USER'],
-                    password=db_settings['PASSWORD'],
-                    host=db_settings['HOST'],
-                    port=db_settings['PORT']
-                )
-                cur = conn.cursor()
+                # Convert user_id to integer
+                user_id = int(user_id)
+                conn = None
+                cur = None
+                try:
+                    db_settings = settings.DATABASES['default']
+                    conn = psycopg2.connect(
+                        dbname=db_settings['NAME'],
+                        user=db_settings['USER'],
+                        password=db_settings['PASSWORD'],
+                        host=db_settings['HOST'],
+                        port=db_settings['PORT']
+                    )
+                    cur = conn.cursor()
 
-                # Get premium status with simpler query
-                cur.execute("""
-                    SELECT start_date, expiry_date 
-                    FROM premium_users 
-                    WHERE user_id = %s 
-                    AND expiry_date > NOW()
-                    ORDER BY expiry_date DESC
-                    LIMIT 1
-                """, (user_id,))
-                
-                premium_status = cur.fetchone()
-                data = {}
-                
-                if premium_status:
-                    expiry_date = premium_status[1]
-                    days_remaining = (expiry_date - datetime.now()).days
-                    data['premium'] = {
-                        'active': True,
-                        'days_remaining': days_remaining,
-                        'expiry_date': expiry_date,
-                        'start_date': premium_status[0]
-                    }
-                    logging.info(f"Found premium status for user {user_id}")
-                else:
-                    data['premium'] = {'active': False}
-                    logging.info(f"No premium status found for user {user_id}")
+                    # Fixed query with proper type casting and timezone handling
+                    cur.execute("""
+                        SELECT start_date, expiry_date 
+                        FROM premium_users 
+                        WHERE user_id = %s 
+                        AND expiry_date > NOW() AT TIME ZONE 'UTC'
+                        ORDER BY expiry_date DESC
+                        LIMIT 1
+                    """, (user_id,))  # Now user_id is properly an integer
+                    
+                    premium_status = cur.fetchone()
+                    data = {}
+                    
+                    if premium_status:
+                        expiry_date = premium_status[1]
+                        days_remaining = (expiry_date - datetime.now()).days
+                        data['premium'] = {
+                            'active': True,
+                            'days_remaining': days_remaining,
+                            'expiry_date': expiry_date,
+                            'start_date': premium_status[0]
+                        }
+                        logging.info(f"Found premium status for user {user_id}")
+                    else:
+                        data['premium'] = {'active': False}
+                        logging.info(f"No premium status found for user {user_id}")
 
-                context['data'] = data
+                    context['data'] = data
 
-            except Exception as e:
-                logging.error(f"Database error: {e}")
-            finally:
-                if cur:
-                    cur.close()
-                if conn:
-                    conn.close()
+                except Exception as e:
+                    logging.error(f"Database error for user {user_id}: {e}")
+                finally:
+                    if cur:
+                        cur.close()
+                    if conn:
+                        conn.close()
+                        
+            except ValueError:
+                logging.error(f"Invalid user_id format: {user_id}")
+                context['data'] = {'premium': {'active': False}}
 
         return render(request, 'miniapps.html', context)
 
