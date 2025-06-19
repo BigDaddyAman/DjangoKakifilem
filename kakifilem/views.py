@@ -98,7 +98,6 @@ def miniapps(request):
         user_id = request.GET.get('user_id')
         action = request.GET.get('action', 'bug')
         
-        # Add debug logging
         logging.info(f"Miniapps accessed by user_id: {user_id}, action: {action}")
         
         context = {
@@ -109,10 +108,7 @@ def miniapps(request):
 
         if user_id:
             try:
-                # Convert user_id to integer and log it
                 user_id = int(user_id)
-                logging.info(f"Checking premium status for user {user_id}")
-                
                 conn = None
                 cur = None
                 try:
@@ -126,44 +122,42 @@ def miniapps(request):
                     )
                     cur = conn.cursor()
 
-                    # Debug: Log current time and query parameters
-                    cur.execute("SELECT NOW();")
-                    current_time = cur.fetchone()[0]
-                    logging.info(f"Current database time: {current_time}")
-
-                    # Simplified premium query with debug logging
-                    query = """
-                        SELECT start_date, expiry_date 
+                    # Log the actual SQL for debugging
+                    sql = """
+                        SELECT user_id, start_date, expiry_date 
                         FROM premium_users 
                         WHERE user_id = %s 
-                        AND expiry_date > NOW()
+                        AND expiry_date > NOW() 
+                        ORDER BY expiry_date DESC 
+                        LIMIT 1
                     """
-                    cur.execute(query, (user_id,))
-                    logging.info(f"Executed premium query for user {user_id}")
-                    
+                    logging.info(f"Executing SQL: {sql} with user_id: {user_id}")
+                    cur.execute(sql, (user_id,))
                     premium_status = cur.fetchone()
                     logging.info(f"Premium query result: {premium_status}")
 
+                    # Check premium status first
                     data = {}
-                    
                     if premium_status:
-                        expiry_date = premium_status[1]
-                        days_remaining = (expiry_date - datetime.now()).days
+                        expiry_date = premium_status[2]  # Index 2 is expiry_date
                         data['premium'] = {
                             'active': True,
-                            'days_remaining': days_remaining,
+                            'days_remaining': (expiry_date - datetime.now()).days,
                             'expiry_date': expiry_date.strftime('%Y-%m-%d %H:%M:%S'),
-                            'start_date': premium_status[0].strftime('%Y-%m-%d %H:%M:%S')
+                            'start_date': premium_status[1].strftime('%Y-%m-%d %H:%M:%S')  # Index 1 is start_date
                         }
-                        logging.info(f"User {user_id} is premium, expires in {days_remaining} days")
+                        logging.info(f"Found premium status for {user_id}: {data['premium']}")
                     else:
                         data['premium'] = {'active': False}
-                        logging.info(f"User {user_id} is not premium")
+                        logging.info(f"No premium status found for {user_id}")
+
+                    # Get admin and pending items if user is admin
+                    # ... rest of admin check code ...
 
                     context['data'] = data
 
                 except Exception as e:
-                    logging.error(f"Database error for user {user_id}: {e}")
+                    logging.error(f"Database error: {e}", exc_info=True)
                 finally:
                     if cur:
                         cur.close()
@@ -171,16 +165,11 @@ def miniapps(request):
                         conn.close()
             except ValueError:
                 logging.error(f"Invalid user_id format: {user_id}")
-                context['data'] = {'premium': {'active': False}}
 
         return render(request, 'miniapps.html', context)
-        
     except Exception as e:
-        logging.error(f"Error in miniapps view: {e}")
-        return render(request, 'miniapps.html', {
-            'error': 'Error checking premium status',
-            'action': 'error'
-        })
+        logging.error(f"Error in miniapps view: {e}", exc_info=True)
+        return render(request, 'miniapps.html', {'error': 'Error checking status'})
 
 async def handle_miniapps_submit(request):
     """Handle mini-apps form submissions"""
