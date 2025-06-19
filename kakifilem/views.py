@@ -94,8 +94,26 @@ def expand_short_url(request, code):
         return redirect('/')
 
 def miniapps(request):
+    """Handle mini-apps page"""
     try:
+        # First try to get user_id from query params (command)
         user_id = request.GET.get('user_id')
+        
+        # If no user_id, try to get from Telegram WebApp data
+        if not user_id:
+            webapp_data = request.headers.get('X-Telegram-Web-App-Data')
+            if webapp_data:
+                # Parse WebApp data
+                try:
+                    import base64
+                    import json
+                    decoded = base64.b64decode(webapp_data).decode('utf-8')
+                    data = json.loads(decoded)
+                    user_id = data.get('user', {}).get('id')
+                    logging.info(f"Got user_id from WebApp: {user_id}")
+                except Exception as e:
+                    logging.error(f"Error parsing WebApp data: {e}")
+
         action = request.GET.get('action', 'bug')
         
         logging.info(f"Miniapps accessed by user_id: {user_id}, action: {action}")
@@ -122,39 +140,42 @@ def miniapps(request):
                     )
                     cur = conn.cursor()
 
-                    # Log the actual SQL for debugging
-                    sql = """
-                        SELECT user_id, start_date, expiry_date 
+                    # Fixed premium query with better logging
+                    cur.execute("""
+                        SELECT COUNT(*) 
                         FROM premium_users 
                         WHERE user_id = %s 
-                        AND expiry_date > NOW() 
-                        ORDER BY expiry_date DESC 
-                        LIMIT 1
-                    """
-                    logging.info(f"Executing SQL: {sql} with user_id: {user_id}")
-                    cur.execute(sql, (user_id,))
-                    premium_status = cur.fetchone()
-                    logging.info(f"Premium query result: {premium_status}")
+                        AND expiry_date > NOW()
+                    """, (user_id,))
+                    
+                    has_premium = cur.fetchone()[0] > 0
+                    logging.info(f"Premium check for user {user_id}: {has_premium}")
 
-                    # Check premium status first
-                    data = {}
-                    if premium_status:
-                        expiry_date = premium_status[2]  # Index 2 is expiry_date
-                        data['premium'] = {
-                            'active': True,
-                            'days_remaining': (expiry_date - datetime.now()).days,
-                            'expiry_date': expiry_date.strftime('%Y-%m-%d %H:%M:%S'),
-                            'start_date': premium_status[1].strftime('%Y-%m-%d %H:%M:%S')  # Index 1 is start_date
-                        }
-                        logging.info(f"Found premium status for {user_id}: {data['premium']}")
+                    if has_premium:
+                        # Get premium details
+                        cur.execute("""
+                            SELECT start_date, expiry_date 
+                            FROM premium_users 
+                            WHERE user_id = %s 
+                            AND expiry_date > NOW()
+                            ORDER BY expiry_date DESC 
+                            LIMIT 1
+                        """, (user_id,))
+                        premium_data = cur.fetchone()
+                        
+                        if premium_data:
+                            start_date, expiry_date = premium_data
+                            days_remaining = (expiry_date - datetime.now()).days
+                            context['data']['premium'] = {
+                                'active': True,
+                                'days_remaining': days_remaining,
+                                'expiry_date': expiry_date.strftime('%Y-%m-%d %H:%M:%S'),
+                                'start_date': start_date.strftime('%Y-%m-%d %H:%M:%S')
+                            }
+                            logging.info(f"Found premium data for user {user_id}: expires in {days_remaining} days")
                     else:
-                        data['premium'] = {'active': False}
-                        logging.info(f"No premium status found for {user_id}")
-
-                    # Get admin and pending items if user is admin
-                    # ... rest of admin check code ...
-
-                    context['data'] = data
+                        context['data']['premium'] = {'active': False}
+                        logging.info(f"User {user_id} is not premium")
 
                 except Exception as e:
                     logging.error(f"Database error: {e}", exc_info=True)
