@@ -93,8 +93,9 @@ def expand_short_url(request, code):
 
 def miniapps(request):
     """Handle mini-apps page"""
-    if request.get_host() != 'bot.kakifilem.com':
-        return redirect('https://bot.kakifilem.com/miniapps/')
+    # Change bot domain check to www domain
+    if request.get_host() != 'www.kakifilem.com':
+        return redirect('https://www.kakifilem.com/miniapps/')
         
     user_id = request.GET.get('user_id')
     action = request.GET.get('action')
