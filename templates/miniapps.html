@@ -100,10 +100,32 @@
         .submission-item:last-child {
             border-bottom: none;
         }
+        .logo {
+            text-align: center;
+            margin: 20px auto;
+            max-width: 200px;
+        }
+        
+        .logo img {
+            width: 100%;
+            height: auto;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="logo">
+            <img src="https://cdn.kakifilem.com/kakifilem.png" alt="Kakifilem Logo">
+        </div>
+
         {% if error %}
             <div class="error">{{ error }}</div>
         {% endif %}
@@ -219,6 +241,9 @@
                 <button type="submit">Submit Report</button>
             </form>
         {% endif %}
+        <footer>
+            © Kakifilem 2025
+        </footer>
     </div>
 
     <script>
