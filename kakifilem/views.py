@@ -94,10 +94,12 @@ def expand_short_url(request, code):
         return redirect('/')
 
 def miniapps(request):
-    """Handle mini-apps page"""
     try:
         user_id = request.GET.get('user_id')
         action = request.GET.get('action', 'bug')
+        
+        # Add debug logging
+        logging.info(f"Miniapps accessed by user_id: {user_id}, action: {action}")
         
         context = {
             'user_id': user_id or '',
@@ -107,8 +109,10 @@ def miniapps(request):
 
         if user_id:
             try:
-                # Convert user_id to integer
+                # Convert user_id to integer and log it
                 user_id = int(user_id)
+                logging.info(f"Checking premium status for user {user_id}")
+                
                 conn = None
                 cur = None
                 try:
@@ -122,47 +126,25 @@ def miniapps(request):
                     )
                     cur = conn.cursor()
 
-                    # Check if user is admin
-                    cur.execute("""
-                        SELECT EXISTS(
-                            SELECT 1 FROM UNNEST(ARRAY[7951420571, 1509468839]) AS admin_id 
-                            WHERE admin_id = %s
-                        )
-                    """, (user_id,))
-                    is_admin = cur.fetchone()[0]
+                    # Debug: Log current time and query parameters
+                    cur.execute("SELECT NOW();")
+                    current_time = cur.fetchone()[0]
+                    logging.info(f"Current database time: {current_time}")
 
-                    data = {}
-
-                    if is_admin:
-                        # Get pending reports/requests for admin
-                        cur.execute("""
-                            SELECT 'bug' as type, id, title, description, created_at, user_id 
-                            FROM bug_reports WHERE status = 'pending'
-                            UNION ALL
-                            SELECT 'request' as type, id, movie_name, additional_info, created_at, user_id 
-                            FROM movie_requests WHERE status = 'pending'
-                            UNION ALL
-                            SELECT 'report' as type, id, video_id, reason, created_at, user_id 
-                            FROM video_reports WHERE status = 'pending'
-                            ORDER BY created_at DESC
-                        """)
-                        pending_items = cur.fetchall()
-                        data['admin'] = {
-                            'is_admin': True,
-                            'pending_items': pending_items
-                        }
-
-                    # Fixed query to properly check premium status
-                    cur.execute("""
+                    # Simplified premium query with debug logging
+                    query = """
                         SELECT start_date, expiry_date 
                         FROM premium_users 
                         WHERE user_id = %s 
-                        AND expiry_date > NOW() AT TIME ZONE 'UTC'
-                        ORDER BY expiry_date DESC
-                        LIMIT 1
-                    """, (user_id,))
+                        AND expiry_date > NOW()
+                    """
+                    cur.execute(query, (user_id,))
+                    logging.info(f"Executed premium query for user {user_id}")
                     
                     premium_status = cur.fetchone()
+                    logging.info(f"Premium query result: {premium_status}")
+
+                    data = {}
                     
                     if premium_status:
                         expiry_date = premium_status[1]
@@ -173,10 +155,10 @@ def miniapps(request):
                             'expiry_date': expiry_date.strftime('%Y-%m-%d %H:%M:%S'),
                             'start_date': premium_status[0].strftime('%Y-%m-%d %H:%M:%S')
                         }
-                        logging.info(f"Found premium status for user {user_id}")
+                        logging.info(f"User {user_id} is premium, expires in {days_remaining} days")
                     else:
                         data['premium'] = {'active': False}
-                        logging.info(f"No premium status found for user {user_id}")
+                        logging.info(f"User {user_id} is not premium")
 
                     context['data'] = data
 
@@ -196,7 +178,7 @@ def miniapps(request):
     except Exception as e:
         logging.error(f"Error in miniapps view: {e}")
         return render(request, 'miniapps.html', {
-            'error': 'Please use the bot command /miniapps to access this page',
+            'error': 'Error checking premium status',
             'action': 'error'
         })
 
