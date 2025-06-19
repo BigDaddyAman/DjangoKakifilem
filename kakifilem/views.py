@@ -5,6 +5,7 @@ import logging
 import os
 import redis
 import json
+from django.http import JsonResponse
 
 logger = logging.getLogger(__name__)
 
@@ -113,6 +114,7 @@ def miniapps(request):
             data = {}
             
             if action == 'premium':
+                # Get premium status
                 cur.execute("""
                     SELECT start_date, expiry_date 
                     FROM premium_users 
@@ -120,6 +122,36 @@ def miniapps(request):
                 """, (user_id,))
                 premium = cur.fetchone()
                 data['premium'] = premium
+                
+            elif action == 'request':
+                # Get user's pending requests
+                cur.execute("""
+                    SELECT movie_name, additional_info, status, created_at 
+                    FROM movie_requests 
+                    WHERE user_id = %s 
+                    ORDER BY created_at DESC LIMIT 5
+                """, (user_id,))
+                data['requests'] = cur.fetchall()
+                
+            elif action == 'bug':
+                # Get user's bug reports
+                cur.execute("""
+                    SELECT title, description, status, created_at 
+                    FROM bug_reports 
+                    WHERE user_id = %s 
+                    ORDER BY created_at DESC LIMIT 5
+                """, (user_id,))
+                data['bugs'] = cur.fetchall()
+                
+            elif action == 'report':
+                # Get user's video reports
+                cur.execute("""
+                    SELECT video_id, reason, status, created_at 
+                    FROM video_reports 
+                    WHERE user_id = %s 
+                    ORDER BY created_at DESC LIMIT 5
+                """, (user_id,))
+                data['reports'] = cur.fetchall()
                 
             context = {
                 'user_id': user_id,
@@ -139,3 +171,58 @@ def miniapps(request):
     except Exception as e:
         logger.error(f"Error in miniapps view: {e}")
         return render(request, 'miniapps.html', {'error': str(e)})
+
+async def handle_miniapps_submit(request):
+    """Handle mini-apps form submissions"""
+    try:
+        data = await request.json()
+        action = data.get('action')
+        user_id = data.get('user_id')
+        form_data = data.get('data', {})
+        
+        conn = None
+        cur = None
+        try:
+            db_settings = settings.DATABASES['default']
+            conn = psycopg2.connect(
+                dbname=db_settings['NAME'],
+                user=db_settings['USER'],
+                password=db_settings['PASSWORD'],
+                host=db_settings['HOST'],
+                port=db_settings['PORT']
+            )
+            cur = conn.cursor()
+            
+            if action == 'bug':
+                cur.execute("""
+                    INSERT INTO bug_reports (user_id, title, description)
+                    VALUES (%s, %s, %s)
+                """, (user_id, form_data.get('title'), form_data.get('description')))
+                
+            elif action == 'request':
+                cur.execute("""
+                    INSERT INTO movie_requests (user_id, movie_name, additional_info)
+                    VALUES (%s, %s, %s)
+                """, (user_id, form_data.get('movieName'), form_data.get('additionalInfo')))
+                
+            elif action == 'report':
+                cur.execute("""
+                    INSERT INTO video_reports (user_id, video_id, reason)
+                    VALUES (%s, %s, %s)
+                """, (user_id, form_data.get('videoId'), form_data.get('reason')))
+                
+            conn.commit()
+            return JsonResponse({'status': 'success'})
+            
+        except Exception as e:
+            logger.error(f"Error in form submission: {e}")
+            return JsonResponse({'status': 'error', 'message': str(e)})
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+                
+    except Exception as e:
+        logger.error(f"Error processing form: {e}")
+        return JsonResponse({'status': 'error', 'message': str(e)})

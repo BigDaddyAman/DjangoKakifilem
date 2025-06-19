@@ -57,6 +57,9 @@ urlpatterns = [
     path('favicon-16x16.png', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/favicon-16x16.png')),
     path('site.webmanifest', RedirectView.as_view(url=settings.STATIC_URL + 'favicon/site.webmanifest')),
     path('<str:code>/', views.expand_short_url, name='expand_short_url'),
+
+    # Add API endpoint for miniapps form submissions
+    path('api/miniapps/', views.handle_miniapps_submit, name='miniapps-submit'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Add custom error handlers
