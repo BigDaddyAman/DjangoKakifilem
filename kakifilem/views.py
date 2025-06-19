@@ -96,87 +96,71 @@ def expand_short_url(request, code):
 def miniapps(request):
     """Handle mini-apps page"""
     try:
-        # Get user_id from query params and validate
+        # Get user_id from query params
         user_id = request.GET.get('user_id')
-        action = request.GET.get('action', 'bug')  # Default to bug page if no action
+        action = request.GET.get('action', 'bug')
         
-        # Debug logging
-        logging.info(f"Miniapps request - User ID: {user_id}, Action: {action}")
-        logging.info(f"All params: {request.GET}")
+        context = {
+            'user_id': user_id or '',  # Use empty string if no user_id
+            'action': action,
+            'data': {}
+        }
         
-        if not user_id:
-            return render(request, 'miniapps.html', {
-                'error': 'Missing user ID parameter. Please use the bot command /miniapps to access this page.',
-                'action': 'error'
-            })
-            
-        try:
-            user_id = int(user_id)
-        except (TypeError, ValueError):
-            return render(request, 'miniapps.html', {
-                'error': 'Invalid user ID format. Please use the bot command /miniapps to access this page.',
-                'action': 'error'
-            })
-
-        # Rest of your view logic...
-        conn = None
-        cur = None
-        try:
-            # Get database connection
-            db_settings = settings.DATABASES['default']
-            conn = psycopg2.connect(
-                dbname=db_settings['NAME'],
-                user=db_settings['USER'],
-                password=db_settings['PASSWORD'],
-                host=db_settings['HOST'],
-                port=db_settings['PORT']
-            )
-            cur = conn.cursor()
-            
-            data = {}
-            
-            # Get premium status
-            cur.execute("""
-                SELECT start_date, expiry_date 
-                FROM premium_users 
-                WHERE user_id = %s AND expiry_date > NOW()
-            """, (user_id,))
-            premium_status = cur.fetchone()
-            
-            if premium_status:
-                expiry_date = premium_status[1]
-                days_remaining = (expiry_date - datetime.now()).days
-                data['premium'] = {
-                    'active': True,
-                    'days_remaining': days_remaining,
-                    'expiry_date': expiry_date,
-                    'start_date': premium_status[0]
-                }
-            else:
-                data['premium'] = {'active': False}
-            
-            context = {
-                'user_id': user_id,
-                'action': action,
-                'data': data
-            }
-            
-            logging.info(f"Rendering miniapps with context: {context}")
-            return render(request, 'miniapps.html', context)
-            
-        except Exception as e:
-            logging.error(f"Database error in miniapps view: {e}")
-            return render(request, 'miniapps.html', {
-                'error': 'Database error occurred',
-                'action': action,
-                'user_id': user_id
-            })
-        finally:
-            if cur:
-                cur.close()
-            if conn:
-                conn.close()
-                
+        # Only fetch database data if we have a user_id
+        if user_id:
+            try:
+                user_id = int(user_id)
+                if user_id > 0:
+                    conn = None
+                    cur = None
+                    try:
+                        # Get database connection
+                        db_settings = settings.DATABASES['default']
+                        conn = psycopg2.connect(
+                            dbname=db_settings['NAME'],
+                            user=db_settings['USER'],
+                            password=db_settings['PASSWORD'],
+                            host=db_settings['HOST'],
+                            port=db_settings['PORT']
+                        )
+                        cur = conn.cursor()
+                        
+                        data = {}
+                        
+                        # Get premium status
+                        cur.execute("""
+                            SELECT start_date, expiry_date 
+                            FROM premium_users 
+                            WHERE user_id = %s AND expiry_date > NOW()
+                        """, (user_id,))
+                        premium_status = cur.fetchone()
+                        
+                        if premium_status:
+                            expiry_date = premium_status[1]
+                            days_remaining = (expiry_date - datetime.now()).days
+                            data['premium'] = {
+                                'active': True,
+                                'days_remaining': days_remaining,
+                                'expiry_date': expiry_date,
+                                'start_date': premium_status[0]
+                            }
+                        else:
+                            data['premium'] = {'active': False}
+                        
+                        context['data'] = data
+                        
+                    except Exception as e:
+                        logging.error(f"Database error: {e}")
+                    finally:
+                        if cur:
+                            cur.close()
+                        if conn:
+                            conn.close()
+            except ValueError:
+                pass  # Invalid user_id format, just show basic page
+        
+        return render(request, 'miniapps.html', context)
+        
     except Exception as e:
         logging.error(f"Error in miniapps view: {e}")
         return render(request, 'miniapps.html', {

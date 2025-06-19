@@ -177,10 +177,22 @@
 
         <!-- Navigation Menu -->
         <div class="nav-menu">
-            <a href="?user_id={{ user_id }}&action=bug" class="nav-button {% if action == 'bug' %}active{% endif %}">🐛 Report Bug</a>
-            <a href="?user_id={{ user_id }}&action=request" class="nav-button {% if action == 'request' %}active{% endif %}">📝 Request Movie</a>
-            <a href="?user_id={{ user_id }}&action=premium" class="nav-button {% if action == 'premium' %}active{% endif %}">💎 Premium Status</a>
-            <a href="?user_id={{ user_id }}&action=report" class="nav-button {% if action == 'report' %}active{% endif %}">⚠️ Report Video</a>
+            <a href="?user_id={{ user_id }}&action=bug" 
+                class="nav-button {% if action == 'bug' %}active{% endif %}">
+                🐛 Report Bug
+            </a>
+            <a href="?user_id={{ user_id }}&action=request" 
+                class="nav-button {% if action == 'request' %}active{% endif %}">
+                📝 Request Movie
+            </a>
+            <a href="?user_id={{ user_id }}&action=premium" 
+                class="nav-button {% if action == 'premium' %}active{% endif %}">
+                💎 Premium Status
+            </a>
+            <a href="?user_id={{ user_id }}&action=report" 
+                class="nav-button {% if action == 'report' %}active{% endif %}">
+                ⚠️ Report Video
+            </a>
             <a href="?user_id={{ user_id }}&action=contact" class="nav-button {% if action == 'contact' %}active{% endif %}">📧 Contact Us</a>
         </div>
 
@@ -296,13 +308,15 @@
             form.onsubmit = async (e) => {
                 e.preventDefault();
                 const formData = new FormData(form);
+                const urlParams = new URLSearchParams(window.location.search);
+                const user_id = urlParams.get('user_id');
                 
                 try {
                     const response = await fetch('/api/miniapps/', {
                         method: 'POST',
                         body: JSON.stringify({
                             action: '{{ action }}',
-                            user_id: '{{ user_id }}',
+                            user_id: user_id,  // Use the user_id from URL
                             data: Object.fromEntries(formData)
                         }),
                         headers: {
@@ -313,6 +327,8 @@
                     if (response.ok) {
                         webapp.showAlert('Successfully submitted!');
                         form.reset();
+                        // Refresh page with same user_id
+                        window.location.href = `?user_id=${user_id}&action={{ action }}`;
                     } else {
                         webapp.showAlert('Error submitting form. Please try again.');
                     }
