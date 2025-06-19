@@ -101,66 +101,64 @@ def miniapps(request):
         action = request.GET.get('action', 'bug')
         
         context = {
-            'user_id': user_id or '',  # Use empty string if no user_id
+            'user_id': user_id or '',
             'action': action,
             'data': {}
         }
-        
-        # Only fetch database data if we have a user_id
+
         if user_id:
+            conn = None
+            cur = None
             try:
-                user_id = int(user_id)
-                if user_id > 0:
-                    conn = None
-                    cur = None
-                    try:
-                        # Get database connection
-                        db_settings = settings.DATABASES['default']
-                        conn = psycopg2.connect(
-                            dbname=db_settings['NAME'],
-                            user=db_settings['USER'],
-                            password=db_settings['PASSWORD'],
-                            host=db_settings['HOST'],
-                            port=db_settings['PORT']
-                        )
-                        cur = conn.cursor()
-                        
-                        data = {}
-                        
-                        # Get premium status
-                        cur.execute("""
-                            SELECT start_date, expiry_date 
-                            FROM premium_users 
-                            WHERE user_id = %s AND expiry_date > NOW()
-                        """, (user_id,))
-                        premium_status = cur.fetchone()
-                        
-                        if premium_status:
-                            expiry_date = premium_status[1]
-                            days_remaining = (expiry_date - datetime.now()).days
-                            data['premium'] = {
-                                'active': True,
-                                'days_remaining': days_remaining,
-                                'expiry_date': expiry_date,
-                                'start_date': premium_status[0]
-                            }
-                        else:
-                            data['premium'] = {'active': False}
-                        
-                        context['data'] = data
-                        
-                    except Exception as e:
-                        logging.error(f"Database error: {e}")
-                    finally:
-                        if cur:
-                            cur.close()
-                        if conn:
-                            conn.close()
-            except ValueError:
-                pass  # Invalid user_id format, just show basic page
-        
+                db_settings = settings.DATABASES['default']
+                conn = psycopg2.connect(
+                    dbname=db_settings['NAME'],
+                    user=db_settings['USER'],
+                    password=db_settings['PASSWORD'],
+                    host=db_settings['HOST'],
+                    port=db_settings['PORT']
+                )
+                cur = conn.cursor()
+
+                # Get premium status with simpler query
+                cur.execute("""
+                    SELECT start_date, expiry_date 
+                    FROM premium_users 
+                    WHERE user_id = %s 
+                    AND expiry_date > NOW()
+                    ORDER BY expiry_date DESC
+                    LIMIT 1
+                """, (user_id,))
+                
+                premium_status = cur.fetchone()
+                data = {}
+                
+                if premium_status:
+                    expiry_date = premium_status[1]
+                    days_remaining = (expiry_date - datetime.now()).days
+                    data['premium'] = {
+                        'active': True,
+                        'days_remaining': days_remaining,
+                        'expiry_date': expiry_date,
+                        'start_date': premium_status[0]
+                    }
+                    logging.info(f"Found premium status for user {user_id}")
+                else:
+                    data['premium'] = {'active': False}
+                    logging.info(f"No premium status found for user {user_id}")
+
+                context['data'] = data
+
+            except Exception as e:
+                logging.error(f"Database error: {e}")
+            finally:
+                if cur:
+                    cur.close()
+                if conn:
+                    conn.close()
+
         return render(request, 'miniapps.html', context)
-        
+
     except Exception as e:
         logging.error(f"Error in miniapps view: {e}")
         return render(request, 'miniapps.html', {
